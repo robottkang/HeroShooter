@@ -51,6 +51,14 @@ public class FirstPersonController : MonoBehaviour
     float _jumpBufferTimer;
     float _airSpeed;
 
+    public event System.Action OnJump;
+    public Vector2 MoveInput    => _moveInput;
+    public bool IsCrouching     => _isCrouching;
+    public bool IsGrounded      => _cc != null && _cc.isGrounded;
+    public bool IsSprinting     => !_isCrouching && _sprintAction != null && _sprintAction.IsPressed();
+    public float WalkSpeed      => walkSpeed;
+    public float RunSpeed       => runSpeed;
+
     void Awake()
     {
         _cc = GetComponent<CharacterController>();
@@ -146,6 +154,7 @@ public class FirstPersonController : MonoBehaviour
         {
             _verticalVelocity = Mathf.Sqrt(jumpHeight * -2f * gravity);
             _jumpBufferTimer = 0f;
+            OnJump?.Invoke();
         }
 
         Vector3 move = transform.right * _moveInput.x + transform.forward * _moveInput.y;
