@@ -1,14 +1,15 @@
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
+using System;
 
 public class RoomListItem : MonoBehaviour
 {
-    [SerializeField] TextMeshProUGUI roomNameText;
-    [SerializeField] TextMeshProUGUI hostNameText;
-    [SerializeField] Button joinButton;
+    [SerializeField] private TextMeshProUGUI roomNameText;
+    [SerializeField] private TextMeshProUGUI hostNameText;
+    [SerializeField] private Button joinButton;
 
-    public void Setup(string roomName, string hostName, System.Action onJoin)
+    public void Setup(string roomName, string hostName, Action onJoin)
     {
         roomNameText.text = roomName;
         hostNameText.text = hostName;

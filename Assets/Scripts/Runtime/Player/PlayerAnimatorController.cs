@@ -1,13 +1,12 @@
 using UnityEngine;
 
-[RequireComponent(typeof(Animator))]
 public class PlayerAnimatorController : MonoBehaviour
 {
     [Header("References")]
-    [SerializeField] FirstPersonController fpc;
+    [SerializeField] private FirstPersonController fpc;
 
-    Animator _anim;
-    CharacterController _cc;
+    private Animator _anim;
+    private CharacterController _cc;
 
     static readonly int VelocityXId   = Animator.StringToHash("VelocityX");
     static readonly int VelocityYId   = Animator.StringToHash("VelocityY");
@@ -16,19 +15,19 @@ public class PlayerAnimatorController : MonoBehaviour
     static readonly int JumpTriggerId = Animator.StringToHash("JumpTrigger");
     static readonly int IsDeadId      = Animator.StringToHash("IsDead");
 
-    void Awake()
+    private void Awake()
     {
         _anim = GetComponent<Animator>();
-        _cc   = fpc.GetComponent<CharacterController>();
+        _cc = fpc.GetComponent<CharacterController>();
         fpc.OnJump += TriggerJump;
     }
 
-    void OnDestroy()
+    private void OnDestroy()
     {
         if (fpc != null) fpc.OnJump -= TriggerJump;
     }
 
-    void Update()
+    private void Update()
     {
         // 수평 이동 속도만 추출해 로컬 공간으로 변환
         Vector3 worldVel = _cc.velocity;
@@ -36,14 +35,14 @@ public class PlayerAnimatorController : MonoBehaviour
         Vector3 localVel = fpc.transform.InverseTransformDirection(worldVel);
 
         // 0.1f dampTime으로 부드럽게 블렌딩
-        _anim.SetFloat(VelocityXId,   localVel.x, 0.1f, Time.deltaTime);
-        _anim.SetFloat(VelocityYId,   localVel.z, 0.1f, Time.deltaTime);
-        _anim.SetBool(IsCrouchingId,  fpc.IsCrouching);
+        _anim.SetFloat(VelocityXId, localVel.x, 0.1f, Time.deltaTime);
+        _anim.SetFloat(VelocityYId, localVel.z, 0.1f, Time.deltaTime);
+        _anim.SetBool(IsCrouchingId, fpc.IsCrouching);
 
         _anim.SetBool(IsGroundedId, fpc.IsGrounded);
     }
 
-    void TriggerJump() => _anim.SetTrigger(JumpTriggerId);
+    private void TriggerJump() => _anim.SetTrigger(JumpTriggerId);
 
     public void SetDead(bool isDead) => _anim.SetBool(IsDeadId, isDead);
 }

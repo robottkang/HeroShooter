@@ -8,38 +8,36 @@ using Photon.Realtime;
 public class LobbyManager : MonoBehaviourPunCallbacks
 {
     [Header("UI References")]
-    [SerializeField] TMP_InputField playerNameInput;
-    [SerializeField] TMP_InputField roomNameInput;
-    [SerializeField] Button createRoomButton;
-    [SerializeField] TMP_InputField searchInput;
-    [SerializeField] Transform roomListContent;
-    [SerializeField] Button refreshButton;
-    [SerializeField] GameObject connectingPanel;
-
-    [Header("Game Scenes")]
-    [SerializeField] string[] gameScenes = { "Stage1" };
+    [SerializeField] private TMP_InputField playerNameInput;
+    [SerializeField] private TMP_InputField roomNameInput;
+    [SerializeField] private Button createRoomButton;
+    [SerializeField] private TMP_InputField searchInput;
+    [SerializeField] private Transform roomListContent;
+    [SerializeField] private Button refreshButton;
+    [SerializeField] private GameObject connectingPanel;
 
     [Header("Map Selection")]
-    [SerializeField] TMP_Dropdown mapDropdown;
-    [SerializeField] Image mapPreviewImage;
-    [SerializeField] Sprite[] mapPreviewSprites;
-    [SerializeField] Sprite randomPreviewSprite;
+    [SerializeField] private string[] maps = { };
+    [SerializeField] private TMP_Dropdown mapDropdown;
+    [SerializeField] private Image mapPreviewImage;
+    [SerializeField] private Sprite[] mapPreviewSprites;
+    [SerializeField] private Sprite randomPreviewSprite;
 
     [Header("Prefabs")]
-    [SerializeField] GameObject roomListItemPrefab;
+    [SerializeField] private GameObject roomListItemPrefab;
 
-    const string HostNameKey = "hn";
-    const int DefaultRoomDisplayLimit = 4;
+    private const string HostNameKey = "hn";
+    private const int DefaultRoomDisplayLimit = 4;
 
-    readonly List<RoomInfo> _cachedRooms = new();
-    readonly List<GameObject> _roomItems = new();
+    private readonly List<RoomInfo> _cachedRooms = new();
+    private readonly List<GameObject> _roomItems = new();
 
-    void Awake()
+    private void Awake()
     {
         PhotonNetwork.AutomaticallySyncScene = true;
     }
 
-    void Start()
+    private void Start()
     {
         createRoomButton.onClick.AddListener(OnCreateRoomClicked);
         refreshButton.onClick.AddListener(OnRefreshClicked);
@@ -51,32 +49,31 @@ public class LobbyManager : MonoBehaviourPunCallbacks
         PhotonNetwork.ConnectUsingSettings();
     }
 
-    void PopulateMapDropdown()
+    private void PopulateMapDropdown()
     {
         mapDropdown.ClearOptions();
         var options = new List<string> { "Random" };
-        options.AddRange(gameScenes);
-        mapDropdown.AddOptions(options);
+        options.AddRange(maps);
+        mapDropdown.AddOptions(new List<string>(options));
         OnMapSelected(0);
     }
 
-    void OnMapSelected(int index)
+    private void OnMapSelected(int index)
     {
         if (mapPreviewImage == null) return;
+
         int sceneIndex = index - 1;
         Sprite sprite = index == 0 ? randomPreviewSprite
             : (mapPreviewSprites != null && sceneIndex < mapPreviewSprites.Length)
                 ? mapPreviewSprites[sceneIndex] : null;
         mapPreviewImage.sprite = sprite;
-        mapPreviewImage.color  = sprite != null ? Color.white : new Color(0.1f, 0.1f, 0.1f);
     }
 
-    string GetSelectedScene()
+    private string GetSelectedScene()
     {
-        int index = mapDropdown != null ? mapDropdown.value : 0;
-        if (index == 0)
-            return gameScenes[Random.Range(0, gameScenes.Length)];
-        return gameScenes[index - 1];
+        if (mapDropdown.value == 0)
+            return maps[Random.Range(0, maps.Length)];
+        return maps[mapDropdown.value];
     }
 
     public override void OnConnectedToMaster()
@@ -104,10 +101,9 @@ public class LobbyManager : MonoBehaviourPunCallbacks
                 else _cachedRooms.Add(room);
             }
         }
-        RedrawList();
     }
 
-    void OnCreateRoomClicked()
+    private void OnCreateRoomClicked()
     {
         string roomName = roomNameInput.text.Trim();
         if (string.IsNullOrEmpty(roomName)) return;
@@ -122,14 +118,14 @@ public class LobbyManager : MonoBehaviourPunCallbacks
                 { HostNameKey, PhotonNetwork.NickName }
             },
             CustomRoomPropertiesForLobby = new[] { HostNameKey },
-            MaxPlayers = 8
+            MaxPlayers = 2
         };
         PhotonNetwork.CreateRoom(roomName, options);
     }
 
-    void OnRefreshClicked() => RedrawList();
+    private void OnRefreshClicked() => RedrawList();
 
-    void RedrawList()
+    private void RedrawList()
     {
         foreach (var item in _roomItems) Destroy(item);
         _roomItems.Clear();
@@ -155,7 +151,7 @@ public class LobbyManager : MonoBehaviourPunCallbacks
         }
     }
 
-    void JoinRoom(string roomName)
+    private void JoinRoom(string roomName)
     {
         string playerName = playerNameInput.text.Trim();
         PhotonNetwork.NickName = string.IsNullOrEmpty(playerName) ? "Player" : playerName;
@@ -165,6 +161,7 @@ public class LobbyManager : MonoBehaviourPunCallbacks
     public override void OnJoinedRoom()
     {
         if (!PhotonNetwork.IsMasterClient) return;
+
         PhotonNetwork.LoadLevel(GetSelectedScene());
     }
 
@@ -182,6 +179,7 @@ public class LobbyManager : MonoBehaviourPunCallbacks
     {
         if (cause == DisconnectCause.None || cause == DisconnectCause.DisconnectByClientLogic) return;
         if (this == null) return;
+
         connectingPanel.SetActive(true);
         PhotonNetwork.ConnectUsingSettings();
     }
