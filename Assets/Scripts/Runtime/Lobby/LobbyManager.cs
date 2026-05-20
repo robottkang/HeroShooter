@@ -41,7 +41,7 @@ public class LobbyManager : MonoBehaviourPunCallbacks
     {
         createRoomButton.onClick.AddListener(OnCreateRoomClicked);
         refreshButton.onClick.AddListener(OnRefreshClicked);
-        searchInput.onValueChanged.AddListener(_ => RedrawList());
+        searchInput.onValueChanged.AddListener(_ => RedrawRoomList());
         PopulateMapDropdown();
         mapDropdown.onValueChanged.AddListener(OnMapSelected);
 
@@ -123,9 +123,9 @@ public class LobbyManager : MonoBehaviourPunCallbacks
         PhotonNetwork.CreateRoom(roomName, options);
     }
 
-    private void OnRefreshClicked() => RedrawList();
+    private void OnRefreshClicked() => RedrawRoomList();
 
-    private void RedrawList()
+    private void RedrawRoomList()
     {
         foreach (var item in _roomItems) Destroy(item);
         _roomItems.Clear();
@@ -160,8 +160,6 @@ public class LobbyManager : MonoBehaviourPunCallbacks
 
     public override void OnJoinedRoom()
     {
-        if (!PhotonNetwork.IsMasterClient) return;
-
         PhotonNetwork.LoadLevel(GetSelectedScene());
     }
 
