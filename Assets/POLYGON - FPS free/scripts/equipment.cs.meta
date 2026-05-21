@@ -1,0 +1,18 @@
+fileFormatVersion: 2
+guid: 440671a7a3b7c4e4894112d6e36ada42
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences: []
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 167864
+  packageName: POLYGON - FPS SAMPLE
+  packageVersion: 1.0
+  assetPath: Assets/POLYGON - FPS free/scripts/equipment.cs
+  uploadId: 373762

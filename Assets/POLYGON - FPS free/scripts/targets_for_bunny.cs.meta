@@ -1,0 +1,18 @@
+fileFormatVersion: 2
+guid: b1bbce12b37b9d541b267ae5d2c9c9ca
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences: []
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 167864
+  packageName: POLYGON - FPS SAMPLE
+  packageVersion: 1.0
+  assetPath: Assets/POLYGON - FPS free/scripts/targets_for_bunny.cs
+  uploadId: 373762

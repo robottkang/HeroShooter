@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: aa2c565603ddcd740a45ee53468f00e2
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 9100000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 167864
+  packageName: POLYGON - FPS SAMPLE
+  packageVersion: 1.0
+  assetPath: Assets/POLYGON - FPS free/killer bunny/AniSound/killer_bunny.controller
+  uploadId: 373762

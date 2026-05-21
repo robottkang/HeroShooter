@@ -1,0 +1,18 @@
+fileFormatVersion: 2
+guid: e8e3326206d17ee4883bef3dcf7aab85
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences: []
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 167864
+  packageName: POLYGON - FPS SAMPLE
+  packageVersion: 1.0
+  assetPath: Assets/POLYGON - FPS free/scripts/laser_script.cs
+  uploadId: 373762
