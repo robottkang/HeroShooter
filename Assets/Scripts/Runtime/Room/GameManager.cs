@@ -1,15 +1,22 @@
 using UnityEngine;
 using Photon.Pun;
 using UnityEngine.UI;
-using System.Collections;
+using Cysharp.Threading.Tasks;
 
 public class GameManager : MonoBehaviourPunCallbacks
 {
     [SerializeField] private GameObject playerPrefab;
+    [SerializeField] private GameObject localPlayerArmsPrefab;
     [SerializeField] private Transform[] spawnPoints;
     [SerializeField] private Button startBtn;
 
-    private bool _spawned;
+#if UNITY_EDITOR
+    [Header("Debug")]
+    [SerializeField] private bool isDebug;
+#else
+    private bool isDebug = false;
+#endif
+
 
     private void Start()
     {
@@ -22,20 +29,29 @@ public class GameManager : MonoBehaviourPunCallbacks
             Camera.main.gameObject.SetActive(false);
         });
 
-        StartCoroutine(ControlStartButton());
+        ControlStartButton().Forget();
     }
 
-    private IEnumerator ControlStartButton()
+    private async UniTask ControlStartButton()
     {
-        yield return new WaitUntil(() => PhotonNetwork.CurrentRoom.PlayerCount >= 2);
+        try
+        {
+            await UniTask.WaitUntil(() => PhotonNetwork.CurrentRoom.PlayerCount >= 2);
 
-        startBtn.gameObject.SetActive(true);
+            startBtn.gameObject.SetActive(true);
+        }
+        catch when (isDebug)
+        {
+            Instantiate(localPlayerArmsPrefab, spawnPoints[0].position, spawnPoints[0].rotation);
+        }
+        catch (System.Exception e)
+        {
+            throw e;
+        }
     }
 
     private void SpawnPlayer()
     {
-        _spawned = true;
-
         int seed = PhotonNetwork.CurrentRoom.Name.GetHashCode() + PhotonNetwork.MasterClient.NickName.GetHashCode();
         var rng = new System.Random(seed);
 
@@ -44,7 +60,8 @@ public class GameManager : MonoBehaviourPunCallbacks
             spawnPoint = spawnPoints[0];
         else
             spawnPoint = spawnPoints[1];
-
+        
+        Instantiate(localPlayerArmsPrefab, spawnPoint.position, spawnPoint.rotation);
         PhotonNetwork.Instantiate(playerPrefab.name, spawnPoint.position, spawnPoint.rotation);
     }
 }

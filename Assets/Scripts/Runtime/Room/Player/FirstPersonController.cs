@@ -28,7 +28,7 @@ public class FirstPersonController : MonoBehaviourPun, IPunObservable
     [Header("Look")]
     [SerializeField] private float mouseSensitivity = 0.15f;
     [SerializeField] private float maxPitchAngle = 80f;
-    [SerializeField] private Transform cameraHolder;
+    [SerializeField] private PlayerCameraController cameraHolder;
 
     private CharacterController _cc;
     private PhotonView _pv;
@@ -69,6 +69,8 @@ public class FirstPersonController : MonoBehaviourPun, IPunObservable
 
         if (_pv.IsMine)
         {
+            SetLayerRecursively(gameObject, LayerMask.NameToLayer("RemotePlayer_Self"));
+
             var playerMap = actionAsset.FindActionMap("Player", true);
             _moveAction = playerMap.FindAction("Move", true);
             _lookAction = playerMap.FindAction("Look", true);
@@ -81,23 +83,19 @@ public class FirstPersonController : MonoBehaviourPun, IPunObservable
         }
         else
         {
+            SetLayerRecursively(gameObject, LayerMask.NameToLayer("RemotePlayer_Other"));
+
             _cc.enabled = false;
 
             if (cameraHolder != null)
-            {
-                var cam = cameraHolder.GetComponentInChildren<Camera>();
-                if (cam != null) cam.gameObject.SetActive(false);
-
-                var audioListener = cameraHolder.GetComponentInChildren<AudioListener>();
-                if (audioListener != null) audioListener.enabled = false;
-            }
+                cameraHolder.gameObject.SetActive(false);
         }
     }
 
     private void OnEnable()
     {
         if (!_pv.IsMine) return;
-        
+
         _moveAction.Enable();
         _lookAction.Enable();
         _jumpAction.Enable();
@@ -137,9 +135,9 @@ public class FirstPersonController : MonoBehaviourPun, IPunObservable
 
             if (cameraHolder != null)
             {
-                var camRot = cameraHolder.localRotation;
+                var camRot = cameraHolder.transform.localRotation;
                 camRot = Quaternion.Lerp(camRot, Quaternion.Euler(_networkCamPitch, 0, 0), Time.deltaTime * 15f);
-                cameraHolder.localRotation = camRot;
+                cameraHolder.transform.localRotation = camRot;
             }
         }
     }
@@ -169,7 +167,7 @@ public class FirstPersonController : MonoBehaviourPun, IPunObservable
         _xRotation -= _lookInput.y * mouseSensitivity;
         _xRotation = Mathf.Clamp(_xRotation, -maxPitchAngle, maxPitchAngle);
 
-        cameraHolder.localRotation = Quaternion.Euler(_xRotation, 0f, 0f);
+        cameraHolder.transform.localRotation = Quaternion.Euler(_xRotation, 0f, 0f);
         transform.Rotate(_lookInput.x * mouseSensitivity * Vector3.up);
     }
 
@@ -199,14 +197,14 @@ public class FirstPersonController : MonoBehaviourPun, IPunObservable
     private void HandleCrouchTransition()
     {
         float targetHeight = _isCrouching ? crouchHeight : standHeight;
-        float targetCamY   = _isCrouching ? crouchCameraY : standCameraY;
+        float targetCamY = _isCrouching ? crouchCameraY : standCameraY;
 
         _cc.height = Mathf.Lerp(_cc.height, targetHeight, crouchTransitionSpeed * Time.deltaTime);
         _cc.center = Vector3.up * (_cc.height / 2f);
 
-        Vector3 camPos = cameraHolder.localPosition;
+        Vector3 camPos = cameraHolder.transform.localPosition;
         camPos.y = Mathf.Lerp(camPos.y, targetCamY, crouchTransitionSpeed * Time.deltaTime);
-        cameraHolder.localPosition = camPos;
+        cameraHolder.transform.localPosition = camPos;
     }
 
     private bool CanStandUp()
@@ -246,5 +244,13 @@ public class FirstPersonController : MonoBehaviourPun, IPunObservable
         _jumpBufferTimer = 0f;
         OnJump?.Invoke();
         photonView.RPC(nameof(RPC_Jump), RpcTarget.Others);
+    }
+
+    private void SetLayerRecursively(GameObject go, int layer)
+    {
+        go.layer = layer;
+        foreach (Transform child in go.transform)
+            SetLayerRecursively(child.gameObject, layer);
+
     }
 }
