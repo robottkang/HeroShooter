@@ -5213,7 +5213,8 @@ MonoBehaviour:
   refreshButton: {fileID: 1454007282}
   connectingPanel: {fileID: 8884250}
   maps:
-  - Stage1
+  - Map1
+  - Map2
   mapDropdown: {fileID: 1535009348}
   mapPreviewImage: {fileID: 586256325}
   mapPreviewSprites: []
