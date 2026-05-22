@@ -4,6 +4,7 @@ using UnityEngine.UI;
 using TMPro;
 using Photon.Pun;
 using Photon.Realtime;
+using ExitGames.Client.Photon;
 
 public class LobbyManager : MonoBehaviourPunCallbacks
 {
@@ -11,9 +12,16 @@ public class LobbyManager : MonoBehaviourPunCallbacks
     [SerializeField] private TMP_InputField playerNameInput;
     [SerializeField] private TMP_InputField roomNameInput;
     [SerializeField] private Button createRoomButton;
+    [SerializeField] private GameObject browsePanel;
     [SerializeField] private TMP_InputField searchInput;
     [SerializeField] private Transform roomListContent;
     [SerializeField] private Button refreshButton;
+    [SerializeField] private GameObject roomInfoPanel;
+    [SerializeField] private TextMeshProUGUI player1InfoText;
+    [SerializeField] private TextMeshProUGUI player2InfoText;
+    [SerializeField] private Button readyButton;
+    [SerializeField] private Color unreadyColor;
+    [SerializeField] private Color readyColor;
     [SerializeField] private GameObject connectingPanel;
 
     [Header("Map Selection")]
@@ -31,6 +39,7 @@ public class LobbyManager : MonoBehaviourPunCallbacks
 
     private readonly List<RoomInfo> _cachedRooms = new();
     private readonly List<GameObject> _roomItems = new();
+    private bool _isReady = false;
 
     private void Awake()
     {
@@ -44,9 +53,21 @@ public class LobbyManager : MonoBehaviourPunCallbacks
         searchInput.onValueChanged.AddListener(_ => RedrawRoomList());
         PopulateMapDropdown();
         mapDropdown.onValueChanged.AddListener(OnMapSelected);
+        readyButton.onClick.AddListener(() =>
+        {
+            if (_isReady) SetReady();
+            else SetUnready();
+        });
 
         connectingPanel.SetActive(true);
+        browsePanel.SetActive(true);
+        roomInfoPanel.SetActive(false);
         PhotonNetwork.ConnectUsingSettings();
+    }
+
+    private void Update()
+    {
+        // ready ±¸Çö
     }
 
     private void PopulateMapDropdown()
@@ -151,6 +172,24 @@ public class LobbyManager : MonoBehaviourPunCallbacks
         }
     }
 
+    private void SetReady()
+    {
+        Hashtable props = new()
+        {
+            { "IsReady", _isReady = true }
+        };
+        PhotonNetwork.LocalPlayer.SetCustomProperties(props);
+    }
+
+    private void SetUnready()
+    {
+        Hashtable props = new()
+        {
+            { "IsReady", _isReady = false }
+        };
+        PhotonNetwork.LocalPlayer.SetCustomProperties(props);
+    }
+
     private void JoinRoom(string roomName)
     {
         string playerName = playerNameInput.text.Trim();
@@ -160,7 +199,7 @@ public class LobbyManager : MonoBehaviourPunCallbacks
 
     public override void OnJoinedRoom()
     {
-        PhotonNetwork.LoadLevel(GetSelectedScene());
+        
     }
 
     public override void OnCreateRoomFailed(short returnCode, string message)

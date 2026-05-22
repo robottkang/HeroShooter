@@ -77,9 +77,6 @@ public class FirstPersonController : MonoBehaviourPun, IPunObservable
             _jumpAction = playerMap.FindAction("Jump", true);
             _sprintAction = playerMap.FindAction("Sprint", true);
             _crouchAction = playerMap.FindAction("Crouch", true);
-
-            Cursor.lockState = CursorLockMode.Locked;
-            Cursor.visible = false;
         }
         else
         {

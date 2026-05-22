@@ -8,7 +8,6 @@ public class GameManager : MonoBehaviourPunCallbacks
     [SerializeField] private GameObject playerPrefab;
     [SerializeField] private GameObject localPlayerArmsPrefab;
     [SerializeField] private Transform[] spawnPoints;
-    [SerializeField] private Button startBtn;
 
 #if UNITY_EDITOR
     [Header("Debug")]
@@ -20,34 +19,12 @@ public class GameManager : MonoBehaviourPunCallbacks
 
     private void Start()
     {
-        startBtn.gameObject.SetActive(false);
+        Cursor.lockState = CursorLockMode.Locked;
+        Cursor.visible = false;
 
-        startBtn.onClick.AddListener(() =>
-        {
+
             SpawnPlayer();
-            startBtn.gameObject.SetActive(false);
             Camera.main.gameObject.SetActive(false);
-        });
-
-        ControlStartButton().Forget();
-    }
-
-    private async UniTask ControlStartButton()
-    {
-        try
-        {
-            await UniTask.WaitUntil(() => PhotonNetwork.CurrentRoom.PlayerCount >= 2);
-
-            startBtn.gameObject.SetActive(true);
-        }
-        catch when (isDebug)
-        {
-            Instantiate(localPlayerArmsPrefab, spawnPoints[0].position, spawnPoints[0].rotation);
-        }
-        catch (System.Exception e)
-        {
-            throw e;
-        }
     }
 
     private void SpawnPlayer()
