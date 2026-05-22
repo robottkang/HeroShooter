@@ -61,7 +61,7 @@ public class GameManager : MonoBehaviourPunCallbacks
         else
             spawnPoint = spawnPoints[1];
         
-        Instantiate(localPlayerArmsPrefab, spawnPoint.position, spawnPoint.rotation);
+        //Instantiate(localPlayerArmsPrefab, spawnPoint.position, spawnPoint.rotation);
         PhotonNetwork.Instantiate(playerPrefab.name, spawnPoint.position, spawnPoint.rotation);
     }
 }

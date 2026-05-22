@@ -405,7 +405,7 @@ MonoBehaviour:
   - {fileID: 1851274501}
   - {fileID: 2001214697}
   startBtn: {fileID: 2053819518}
-  isDebug: 1
+  isDebug: 0
 --- !u!4 &171640753
 Transform:
   m_ObjectHideFlags: 0
