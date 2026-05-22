@@ -73,7 +73,7 @@ public class LobbyManager : MonoBehaviourPunCallbacks
     {
         if (mapDropdown.value == 0)
             return maps[Random.Range(0, maps.Length)];
-        return maps[mapDropdown.value];
+        return maps[mapDropdown.value - 1];
     }
 
     public override void OnConnectedToMaster()
