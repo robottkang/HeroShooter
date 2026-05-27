@@ -1,223 +1,161 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.UI;
-using TMPro;
-using Photon.Pun;
-using Photon.Realtime;
-using ExitGames.Client.Photon;
+using Fusion;
+using Fusion.Sockets;
 
-public class LobbyManager : MonoBehaviourPunCallbacks
+public class LobbyManager : MonoBehaviour, INetworkRunnerCallbacks
 {
-    [Header("UI References")]
-    [SerializeField] private TMP_InputField playerNameInput;
-    [SerializeField] private TMP_InputField roomNameInput;
-    [SerializeField] private Button createRoomButton;
-    [SerializeField] private GameObject browsePanel;
-    [SerializeField] private TMP_InputField searchInput;
-    [SerializeField] private Transform roomListContent;
-    [SerializeField] private Button refreshButton;
-    [SerializeField] private GameObject roomInfoPanel;
-    [SerializeField] private TextMeshProUGUI player1InfoText;
-    [SerializeField] private TextMeshProUGUI player2InfoText;
-    [SerializeField] private Button readyButton;
-    [SerializeField] private Color unreadyColor;
-    [SerializeField] private Color readyColor;
     [SerializeField] private GameObject connectingPanel;
+    [SerializeField] private BrowseController browsePanel;
+    [SerializeField] private RoomManagementController createRoomPanel;
+    [SerializeField] private SessionController sessionPanel;
+    [SerializeField] private NetworkRunner runnerPrefab;
 
-    [Header("Map Selection")]
-    [SerializeField] private string[] maps = { };
-    [SerializeField] private TMP_Dropdown mapDropdown;
-    [SerializeField] private Image mapPreviewImage;
-    [SerializeField] private Sprite[] mapPreviewSprites;
-    [SerializeField] private Sprite randomPreviewSprite;
+    private NetworkRunner _runner;
+    private string _pendingMap;
 
-    [Header("Prefabs")]
-    [SerializeField] private GameObject roomListItemPrefab;
-
-    private const string HostNameKey = "hn";
-    private const int DefaultRoomDisplayLimit = 4;
-
-    private readonly List<RoomInfo> _cachedRooms = new();
-    private readonly List<GameObject> _roomItems = new();
-    private bool _isReady = false;
-
-    private void Awake()
-    {
-        PhotonNetwork.AutomaticallySyncScene = true;
-    }
+    private void OnEnable() => LobbySessionController.OnStateChanged += OnSessionStateChanged;
+    private void OnDisable() => LobbySessionController.OnStateChanged -= OnSessionStateChanged;
 
     private void Start()
     {
-        createRoomButton.onClick.AddListener(OnCreateRoomClicked);
-        refreshButton.onClick.AddListener(OnRefreshClicked);
-        searchInput.onValueChanged.AddListener(_ => RedrawRoomList());
-        PopulateMapDropdown();
-        mapDropdown.onValueChanged.AddListener(OnMapSelected);
-        readyButton.onClick.AddListener(() =>
+        browsePanel.OnJoinRoomRequested += JoinRoom;
+
+        createRoomPanel.OnCreateRoomRequested += CreateRoom;
+        createRoomPanel.OnBackRequested += ShowBrowsePanel;
+
+        sessionPanel.OnReadyClicked += () => LobbySessionController.Instance?.RequestToggleReady();
+        sessionPanel.OnMapSelected += mapName => LobbySessionController.Instance?.RequestSetMap(mapName);
+
+        ShowBrowsePanel();
+        connectingPanel.SetActive(true);
+        ConnectToLobby();
+    }
+
+    private void ShowBrowsePanel()
+    {
+        browsePanel.Show();
+        createRoomPanel.Hide();
+        sessionPanel.Hide();
+    }
+
+    private void ShowCreateRoomPanel()
+    {
+        browsePanel.Hide();
+        createRoomPanel.Show();
+    }
+
+    private void ShowSessionPanel()
+    {
+        browsePanel.Hide();
+        createRoomPanel.Hide();
+        sessionPanel.Show(_runner.SessionInfo.Name);
+    }
+
+    private async void ConnectToLobby()
+    {
+        _runner = FindFirstObjectByType<NetworkRunner>();
+        if (_runner == null )
+            _runner = Instantiate(runnerPrefab);
+
+        _runner.AddCallbacks(this);
+        var result = await _runner.JoinSessionLobby(SessionLobby.Shared);
+        if (result.Ok)
+            connectingPanel.SetActive(false);
+        else
+            Debug.LogError($"[Lobby] JoinSessionLobby failed: {result.ShutdownReason}");
+    }
+
+    private async void CreateRoom(string roomName, string playerName, string mapName)
+    {
+        LocalPlayerData.PlayerName = playerName;
+        _pendingMap = mapName;
+
+        var props = new Dictionary<string, SessionProperty>
         {
-            if (_isReady) SetReady();
-            else SetUnready();
+            { SessionKeys.HostName, playerName },
+            { SessionKeys.CreatedTime, DateTime.Now.ToString("HHmmssfff") }
+        };
+
+        var result = await _runner.StartGame(new StartGameArgs
+        {
+            GameMode = GameMode.Shared,
+            SessionName = roomName,
+            SessionProperties = props,
+            PlayerCount = 2,
         });
 
-        connectingPanel.SetActive(true);
-        browsePanel.SetActive(true);
-        roomInfoPanel.SetActive(false);
-        PhotonNetwork.ConnectUsingSettings();
-    }
-
-    private void Update()
-    {
-        // ready ±¸Çö
-    }
-
-    private void PopulateMapDropdown()
-    {
-        mapDropdown.ClearOptions();
-        var options = new List<string> { "Random" };
-        options.AddRange(maps);
-        mapDropdown.AddOptions(new List<string>(options));
-        OnMapSelected(0);
-    }
-
-    private void OnMapSelected(int index)
-    {
-        if (mapPreviewImage == null) return;
-
-        int sceneIndex = index - 1;
-        Sprite sprite = index == 0 ? randomPreviewSprite
-            : (mapPreviewSprites != null && sceneIndex < mapPreviewSprites.Length)
-                ? mapPreviewSprites[sceneIndex] : null;
-        mapPreviewImage.sprite = sprite;
-    }
-
-    private string GetSelectedScene()
-    {
-        if (mapDropdown.value == 0)
-            return maps[Random.Range(0, maps.Length)];
-        return maps[mapDropdown.value - 1];
-    }
-
-    public override void OnConnectedToMaster()
-    {
-        PhotonNetwork.JoinLobby();
-    }
-
-    public override void OnJoinedLobby()
-    {
-        connectingPanel.SetActive(false);
-    }
-
-    public override void OnRoomListUpdate(List<RoomInfo> roomList)
-    {
-        foreach (var room in roomList)
+        if (!result.Ok)
         {
-            if (room.RemovedFromList)
-            {
-                _cachedRooms.RemoveAll(r => r.Name == room.Name);
-            }
-            else
-            {
-                int idx = _cachedRooms.FindIndex(r => r.Name == room.Name);
-                if (idx >= 0) _cachedRooms[idx] = room;
-                else _cachedRooms.Add(room);
-            }
+            Debug.LogError($"[Lobby] CreateRoom failed: {result.ShutdownReason}");
+            createRoomPanel.SetConfirmInteractable(true);
         }
     }
 
-    private void OnCreateRoomClicked()
+    private async void JoinRoom(string roomName)
     {
-        string roomName = roomNameInput.text.Trim();
-        if (string.IsNullOrEmpty(roomName)) return;
+        LocalPlayerData.PlayerName = browsePanel.PlayerName;
 
-        string playerName = playerNameInput.text.Trim();
-        PhotonNetwork.NickName = string.IsNullOrEmpty(playerName) ? "Player" : playerName;
-
-        var options = new RoomOptions
+        var result = await _runner.StartGame(new StartGameArgs
         {
-            CustomRoomProperties = new ExitGames.Client.Photon.Hashtable
+            GameMode = GameMode.Shared,
+            SessionName = roomName,
+        });
+
+        if (!result.Ok)
+            Debug.LogError($"[Lobby] JoinRoom failed: {result.ShutdownReason}");
+    }
+
+    private void OnSessionStateChanged()
+    {
+        var ctrl = LobbySessionController.Instance;
+        if (ctrl == null) return;
+
+        if (!sessionPanel.IsVisible)
+        {
+            ShowSessionPanel();
+
+            if (ctrl.Object.HasStateAuthority && !string.IsNullOrEmpty(_pendingMap))
             {
-                { HostNameKey, PhotonNetwork.NickName }
-            },
-            CustomRoomPropertiesForLobby = new[] { HostNameKey },
-            MaxPlayers = 2
-        };
-        PhotonNetwork.CreateRoom(roomName, options);
-    }
-
-    private void OnRefreshClicked() => RedrawRoomList();
-
-    private void RedrawRoomList()
-    {
-        foreach (var item in _roomItems) Destroy(item);
-        _roomItems.Clear();
-
-        string search = searchInput != null ? searchInput.text.Trim().ToLower() : string.Empty;
-        bool hasSearch = !string.IsNullOrEmpty(search);
-
-        int count = 0;
-        foreach (var room in _cachedRooms)
-        {
-            if (!room.IsOpen || !room.IsVisible) continue;
-            if (hasSearch && !room.Name.ToLower().Contains(search)) continue;
-            if (!hasSearch && count >= DefaultRoomDisplayLimit) break;
-
-            string hostName = room.CustomProperties.TryGetValue(HostNameKey, out var hn)
-                ? hn.ToString() : "Unknown";
-
-            string capturedName = room.Name;
-            var go = Instantiate(roomListItemPrefab, roomListContent);
-            go.GetComponent<RoomListItem>().Setup(capturedName, hostName, () => JoinRoom(capturedName));
-            _roomItems.Add(go);
-            count++;
+                ctrl.RequestSetMap(_pendingMap);
+                _pendingMap = null;
+            }
         }
+
+        sessionPanel.Refresh(ctrl.Players, ctrl.SelectedMap.ToString(), _runner.LocalPlayer, ctrl.Object.HasStateAuthority);
     }
 
-    private void SetReady()
-    {
-        Hashtable props = new()
-        {
-            { "IsReady", _isReady = true }
-        };
-        PhotonNetwork.LocalPlayer.SetCustomProperties(props);
-    }
+    public void OnSessionListUpdated(NetworkRunner runner, List<SessionInfo> sessionList)
+        => browsePanel.UpdateSessions(sessionList);
 
-    private void SetUnready()
+    public void OnDisconnectedFromServer(NetworkRunner runner, NetDisconnectReason reason)
     {
-        Hashtable props = new()
-        {
-            { "IsReady", _isReady = false }
-        };
-        PhotonNetwork.LocalPlayer.SetCustomProperties(props);
-    }
-
-    private void JoinRoom(string roomName)
-    {
-        string playerName = playerNameInput.text.Trim();
-        PhotonNetwork.NickName = string.IsNullOrEmpty(playerName) ? "Player" : playerName;
-        PhotonNetwork.JoinRoom(roomName);
-    }
-
-    public override void OnJoinedRoom()
-    {
-        
-    }
-
-    public override void OnCreateRoomFailed(short returnCode, string message)
-    {
-        Debug.LogError($"[Lobby] CreateRoom failed ({returnCode}): {message}");
-    }
-
-    public override void OnJoinRoomFailed(short returnCode, string message)
-    {
-        Debug.LogError($"[Lobby] JoinRoom failed ({returnCode}): {message}");
-    }
-
-    public override void OnDisconnected(DisconnectCause cause)
-    {
-        if (cause == DisconnectCause.None || cause == DisconnectCause.DisconnectByClientLogic) return;
-        if (this == null) return;
-
+        ShowBrowsePanel();
         connectingPanel.SetActive(true);
-        PhotonNetwork.ConnectUsingSettings();
+        Destroy(_runner.gameObject);
+        _runner = null;
+        ConnectToLobby();
     }
+
+    public void OnStartGameFailed(NetworkRunner runner, ShutdownReason reason)
+        => Debug.LogError($"[Lobby] StartGame failed: {reason}");
+
+    public void OnConnectedToServer(NetworkRunner runner) { }
+    public void OnPlayerJoined(NetworkRunner runner, PlayerRef player) { }
+    public void OnPlayerLeft(NetworkRunner runner, PlayerRef player) { }
+    public void OnObjectExitAOI(NetworkRunner runner, NetworkObject obj, PlayerRef player) { }
+    public void OnObjectEnterAOI(NetworkRunner runner, NetworkObject obj, PlayerRef player) { }
+    public void OnShutdown(NetworkRunner runner, ShutdownReason shutdownReason) { }
+    public void OnConnectRequest(NetworkRunner runner, NetworkRunnerCallbackArgs.ConnectRequest request, byte[] token) { }
+    public void OnConnectFailed(NetworkRunner runner, NetAddress remoteAddress, NetConnectFailedReason reason) { }
+    public void OnUserSimulationMessage(NetworkRunner runner, SimulationMessagePtr message) { }
+    public void OnReliableDataReceived(NetworkRunner runner, PlayerRef player, ReliableKey key, System.ArraySegment<byte> data) { }
+    public void OnReliableDataProgress(NetworkRunner runner, PlayerRef player, ReliableKey key, float progress) { }
+    public void OnInput(NetworkRunner runner, NetworkInput input) { }
+    public void OnInputMissing(NetworkRunner runner, PlayerRef player, NetworkInput input) { }
+    public void OnCustomAuthenticationResponse(NetworkRunner runner, Dictionary<string, object> data) { }
+    public void OnHostMigration(NetworkRunner runner, HostMigrationToken hostMigrationToken) { }
+    public void OnSceneLoadDone(NetworkRunner runner) { }
+    public void OnSceneLoadStart(NetworkRunner runner) { }
 }

@@ -197,8 +197,7 @@ GameObject:
   - component: {fileID: 6353605488150916575}
   - component: {fileID: 4151063621855169108}
   - component: {fileID: 5799965577927399923}
-  - component: {fileID: 7753520341108826117}
-  - component: {fileID: 8866545222161740185}
+  - component: {fileID: 3319058786258908537}
   m_Layer: 7
   m_Name: Player
   m_TagString: Untagged
@@ -298,7 +297,9 @@ MonoBehaviour:
   mouseSensitivity: 0.15
   maxPitchAngle: 80
   cameraHolder: {fileID: 2177891503593820559}
---- !u!114 &7753520341108826117
+  _IsCrouching:
+    _value: 0
+--- !u!114 &3319058786258908537
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -307,37 +308,16 @@ MonoBehaviour:
   m_GameObject: {fileID: 6538525284220438900}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: aa584fbee541324448dd18d8409c7a41, type: 3}
+  m_Script: {fileID: -1552182283, guid: e725a070cec140c4caffb81624c8c787, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: PhotonUnityNetworking::Photon.Pun.PhotonView
-  ObservedComponentsFoldoutOpen: 1
-  Group: 0
-  prefixField: -1
-  Synchronization: 2
-  OwnershipTransfer: 0
-  observableSearch: 2
-  ObservedComponents:
+  m_EditorClassIdentifier: Fusion.Runtime.dll::Fusion.NetworkObject
+  SortKey: 4065100922
+  ObjectInterest: 1
+  Flags: 262145
+  NestedObjects: []
+  NetworkedBehaviours:
   - {fileID: 5799965577927399923}
-  - {fileID: 8866545222161740185}
-  sceneViewId: 0
-  InstantiationId: 0
-  isRuntimeInstantiated: 0
---- !u!114 &8866545222161740185
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6538525284220438900}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 627855c7f81362d41938ffe0b1475957, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: PhotonUnityNetworking::Photon.Pun.PhotonTransformView
-  m_SynchronizePosition: 1
-  m_SynchronizeRotation: 1
-  m_SynchronizeScale: 0
-  m_UseLocal: 1
+  ForceRemoteRenderTimeframe: 0
 --- !u!1 &8820522861048460235
 GameObject:
   m_ObjectHideFlags: 0

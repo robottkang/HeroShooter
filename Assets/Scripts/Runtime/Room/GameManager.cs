@@ -1,11 +1,11 @@
 using UnityEngine;
-using Photon.Pun;
 using UnityEngine.UI;
+using Fusion;
 using Cysharp.Threading.Tasks;
 
-public class GameManager : MonoBehaviourPunCallbacks
+public class GameManager : SimulationBehaviour
 {
-    [SerializeField] private GameObject playerPrefab;
+    [SerializeField] private NetworkObject playerPrefab;
     [SerializeField] private GameObject localPlayerArmsPrefab;
     [SerializeField] private Transform[] spawnPoints;
 
@@ -22,23 +22,26 @@ public class GameManager : MonoBehaviourPunCallbacks
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
 
-
-            SpawnPlayer();
-            Camera.main.gameObject.SetActive(false);
+        SpawnPlayer();
+        Camera.main.gameObject.SetActive(false);
     }
 
     private void SpawnPlayer()
     {
-        int seed = PhotonNetwork.CurrentRoom.Name.GetHashCode() + PhotonNetwork.MasterClient.NickName.GetHashCode();
+        string sessionName = Runner.SessionInfo.Name;
+        string sessionCreatedTime = Runner.SessionInfo.Properties.TryGetValue(SessionKeys.CreatedTime, out var ct) ?
+            ct.PropertyValue.ToString() : "";
+        int seed = (sessionName + sessionCreatedTime).GetHashCode();
+
         var rng = new System.Random(seed);
 
         Transform spawnPoint;
-        if (PhotonNetwork.IsMasterClient ^ (rng.Next(0, 2) == 0))
+        if (Runner.IsSharedModeMasterClient ^ (rng.Next(0, 2) == 0))
             spawnPoint = spawnPoints[0];
         else
             spawnPoint = spawnPoints[1];
         
         //Instantiate(localPlayerArmsPrefab, spawnPoint.position, spawnPoint.rotation);
-        PhotonNetwork.Instantiate(playerPrefab.name, spawnPoint.position, spawnPoint.rotation);
+        Runner.Spawn(playerPrefab, spawnPoint.position, spawnPoint.rotation, Runner.LocalPlayer);
     }
 }

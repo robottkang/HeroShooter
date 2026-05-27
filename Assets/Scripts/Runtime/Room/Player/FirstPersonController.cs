@@ -1,9 +1,9 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
 using System;
-using Photon.Pun;
+using Fusion;
 
-public class FirstPersonController : MonoBehaviourPun, IPunObservable
+public class FirstPersonController : NetworkBehaviour
 {
     [Header("Input")]
     [SerializeField] private InputActionAsset actionAsset;
@@ -30,8 +30,12 @@ public class FirstPersonController : MonoBehaviourPun, IPunObservable
     [SerializeField] private float maxPitchAngle = 80f;
     [SerializeField] private PlayerCameraController cameraHolder;
 
+    [Networked] private Vector3 NetworkedPosition { get => default; set { } }
+    [Networked] private Quaternion NetworkedRotation { get => default; set { } }
+    [Networked] private float NetworkedCamPitch { get => default; set { } }
+    [Networked] public NetworkBool IsCrouching { get => default; set { } }
+
     private CharacterController _cc;
-    private PhotonView _pv;
 
     private InputAction _moveAction;
     private InputAction _lookAction;
@@ -43,31 +47,24 @@ public class FirstPersonController : MonoBehaviourPun, IPunObservable
     private Vector2 _lookInput;
     private float _verticalVelocity;
     private float _xRotation;
-    private bool _isCrouching;
     private float _jumpBufferTimer;
     private float _airSpeed = 5f;
 
-    private Vector3 _networkPosition;
-    private Quaternion _networkRotation;
-    private float _networkCamPitch;
-
     public event Action OnJump;
     public Vector2 MoveInput => _moveInput;
-    public bool IsCrouching => _isCrouching;
     public bool IsGrounded => _cc.isGrounded;
-    public bool IsSprinting => !_isCrouching && _sprintAction != null && _sprintAction.IsPressed();
+    public bool IsSprinting => !IsCrouching && _sprintAction != null && _sprintAction.IsPressed();
     public float WalkSpeed => walkSpeed;
     public float RunSpeed => runSpeed;
 
-    private void Awake()
+    public override void Spawned()
     {
         _cc = GetComponent<CharacterController>();
-        _pv = GetComponent<PhotonView>();
 
         _cc.height = standHeight;
         _cc.center = Vector3.up * (standHeight / 2f);
 
-        if (_pv.IsMine)
+        if (Object.HasInputAuthority)
         {
             SetLayerRecursively(gameObject, LayerMask.NameToLayer("RemotePlayer_Self"));
 
@@ -77,86 +74,70 @@ public class FirstPersonController : MonoBehaviourPun, IPunObservable
             _jumpAction = playerMap.FindAction("Jump", true);
             _sprintAction = playerMap.FindAction("Sprint", true);
             _crouchAction = playerMap.FindAction("Crouch", true);
+
+            _moveAction.Enable();
+            _lookAction.Enable();
+            _jumpAction.Enable();
+            _sprintAction.Enable();
+            _crouchAction.Enable();
         }
         else
         {
             SetLayerRecursively(gameObject, LayerMask.NameToLayer("RemotePlayer_Other"));
-
             _cc.enabled = false;
-
             if (cameraHolder != null)
                 cameraHolder.gameObject.SetActive(false);
         }
     }
 
-    private void OnEnable()
+    public override void FixedUpdateNetwork()
     {
-        if (!_pv.IsMine) return;
+        if (!Object.HasInputAuthority) return;
 
-        _moveAction.Enable();
-        _lookAction.Enable();
-        _jumpAction.Enable();
-        _sprintAction.Enable();
-        _crouchAction.Enable();
+        _moveInput = _moveAction.ReadValue<Vector2>();
+        _lookInput = _lookAction.ReadValue<Vector2>();
+
+        HandleCrouch();
+        HandleJumpBuffer();
+        HandleLook();
+        HandleMovement();
+        HandleCrouchTransition();
+
+        NetworkedPosition = transform.position;
+        NetworkedRotation = transform.rotation;
+        NetworkedCamPitch = _xRotation;
     }
 
-    private void OnDisable()
+    public override void Render()
     {
-        if (!_pv.IsMine) return;
+        if (Object.HasInputAuthority) return;
 
-        _moveAction.Disable();
-        _lookAction.Disable();
-        _jumpAction.Disable();
-        _sprintAction.Disable();
-        _crouchAction.Disable();
-    }
+        transform.SetPositionAndRotation(
+            Vector3.Lerp(transform.position, NetworkedPosition, Time.deltaTime * 15f),
+            Quaternion.Lerp(transform.rotation, NetworkedRotation, Time.deltaTime * 15f));
 
-    private void Update()
-    {
-        if (_pv.IsMine)
+        if (cameraHolder != null)
         {
-            _moveInput = _moveAction.ReadValue<Vector2>();
-            _lookInput = _lookAction.ReadValue<Vector2>();
-
-            HandleCrouch();
-            HandleJumpBuffer();
-            HandleLook();
-            HandleMovement();
-            HandleCrouchTransition();
-        }
-        else
-        {
-            transform.SetPositionAndRotation(
-                Vector3.Lerp(transform.position, _networkPosition, Time.deltaTime * 15f),
-                Quaternion.Lerp(transform.rotation, _networkRotation, Time.deltaTime * 15f));
-
-            if (cameraHolder != null)
-            {
-                var camRot = cameraHolder.transform.localRotation;
-                camRot = Quaternion.Lerp(camRot, Quaternion.Euler(_networkCamPitch, 0, 0), Time.deltaTime * 15f);
-                cameraHolder.transform.localRotation = camRot;
-            }
+            var camRot = cameraHolder.transform.localRotation;
+            camRot = Quaternion.Lerp(camRot, Quaternion.Euler(NetworkedCamPitch, 0, 0), Time.deltaTime * 15f);
+            cameraHolder.transform.localRotation = camRot;
         }
     }
 
     private void HandleCrouch()
     {
         if (_crouchAction.IsPressed())
-        {
-            _isCrouching = true;
-        }
-        else if (_isCrouching && CanStandUp())
-        {
-            _isCrouching = false;
-        }
+            IsCrouching = true;
+        else if (IsCrouching && CanStandUp())
+            IsCrouching = false;
     }
 
     private void HandleJumpBuffer()
     {
-        if (_jumpAction.WasPressedThisFrame() && !_isCrouching)
+        if (_jumpAction.WasPressedThisFrame() && !IsCrouching)
             _jumpBufferTimer = jumpBufferTime;
 
-        _jumpBufferTimer -= Time.deltaTime;
+        _jumpBufferTimer -= Runner.DeltaTime;
     }
 
     private void HandleLook()
@@ -173,8 +154,8 @@ public class FirstPersonController : MonoBehaviourPun, IPunObservable
         if (_cc.isGrounded && _verticalVelocity < 0f)
             _verticalVelocity = -2f;
 
-        bool isSprinting = !_isCrouching && _sprintAction.IsPressed();
-        float speed = _isCrouching ? crouchSpeed : (isSprinting ? runSpeed : walkSpeed);
+        bool isSprinting = !IsCrouching && _sprintAction.IsPressed();
+        float speed = IsCrouching ? crouchSpeed : (isSprinting ? runSpeed : walkSpeed);
 
         if (_cc.isGrounded)
             _airSpeed = speed;
@@ -193,8 +174,8 @@ public class FirstPersonController : MonoBehaviourPun, IPunObservable
 
     private void HandleCrouchTransition()
     {
-        float targetHeight = _isCrouching ? crouchHeight : standHeight;
-        float targetCamY = _isCrouching ? crouchCameraY : standCameraY;
+        float targetHeight = IsCrouching ? crouchHeight : standHeight;
+        float targetCamY = IsCrouching ? crouchCameraY : standCameraY;
 
         _cc.height = Mathf.Lerp(_cc.height, targetHeight, crouchTransitionSpeed * Time.deltaTime);
         _cc.center = Vector3.up * (_cc.height / 2f);
@@ -211,25 +192,7 @@ public class FirstPersonController : MonoBehaviourPun, IPunObservable
         return !Physics.SphereCast(origin, _cc.radius * 0.9f, Vector3.up, out _, checkDistance + 0.05f);
     }
 
-    public void OnPhotonSerializeView(PhotonStream stream, PhotonMessageInfo info)
-    {
-        if (stream.IsWriting)
-        {
-            stream.SendNext(transform.position);
-            stream.SendNext(transform.rotation);
-            stream.SendNext(_xRotation);
-            stream.SendNext(_isCrouching);
-        }
-        else
-        {
-            _networkPosition = (Vector3)stream.ReceiveNext();
-            _networkRotation = (Quaternion)stream.ReceiveNext();
-            _networkCamPitch = (float)stream.ReceiveNext();
-            _isCrouching = (bool)stream.ReceiveNext();
-        }
-    }
-
-    [PunRPC]
+    [Rpc(RpcSources.InputAuthority, RpcTargets.All)]
     private void RPC_Jump()
     {
         OnJump?.Invoke();
@@ -239,8 +202,7 @@ public class FirstPersonController : MonoBehaviourPun, IPunObservable
     {
         _verticalVelocity = Mathf.Sqrt(jumpHeight * -2f * gravity);
         _jumpBufferTimer = 0f;
-        OnJump?.Invoke();
-        photonView.RPC(nameof(RPC_Jump), RpcTarget.Others);
+        RPC_Jump();
     }
 
     private void SetLayerRecursively(GameObject go, int layer)
