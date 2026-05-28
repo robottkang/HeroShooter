@@ -4,29 +4,22 @@ using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 using Fusion;
+using UnityEngine.Events;
 
 public class BrowseController : MonoBehaviour
 {
     [SerializeField] private int defaultSessionCount = 5;
     [SerializeField] private TMP_InputField playerNameInput;
     [SerializeField] private TMP_InputField searchInput;
-    [SerializeField] private Transform roomListContent;
+    [SerializeField] private Transform sessionListContent;
     [SerializeField] private Button refreshButton;
     [SerializeField] private GameObject sessionListItemPrefab;
 
     private List<SessionInfo> _sessions = new();
     private readonly List<GameObject> _sessionItems = new();
 
-    public event Action<string> OnJoinRoomRequested;
-
-    public string PlayerName
-    {
-        get
-        {
-            string name = playerNameInput.text.Trim();
-            return string.IsNullOrEmpty(name) ? "Player" : name;
-        }
-    }
+    public delegate void OnJoinSessionHandler(string sessionName);
+    public event OnJoinSessionHandler OnJoinSessionRequested;
 
     private void Start()
     {
@@ -59,18 +52,19 @@ public class BrowseController : MonoBehaviour
         bool hasSearch = !string.IsNullOrEmpty(search);
 
         int count = 0;
-        foreach (var room in _sessions)
+        foreach (var session in _sessions)
         {
-            if (!room.IsOpen || !room.IsVisible) continue;
-            if (hasSearch && !room.Name.ToLower().Contains(search)) continue;
+            if (!session.IsOpen || !session.IsVisible) continue;
+            if (hasSearch && !session.Name.ToLower().Contains(search)) continue;
             if (!hasSearch && count >= redrawSessionCount) break;
 
-            string hostName = room.Properties.TryGetValue(SessionKeys.HostName, out var hn)
+            string hostName = session.Properties.TryGetValue(SessionKeys.HostName, out var hn)
                 ? hn.ToString() : "Unknown";
 
-            string capturedName = room.Name;
-            var go = Instantiate(sessionListItemPrefab, roomListContent);
-            go.GetComponent<RoomListItem>().Setup(capturedName, hostName, () => OnJoinRoomRequested?.Invoke(capturedName));
+            string capturedName = session.Name;
+            var go = Instantiate(sessionListItemPrefab, sessionListContent);
+            go.GetComponent<RoomListItem>()
+                .Setup(capturedName, hostName, () => OnJoinSessionRequested?.Invoke(capturedName));
             _sessionItems.Add(go);
             count++;
         }

@@ -2,9 +2,19 @@ using UnityEngine;
 
 public static class LocalPlayerData
 {
-    public static string PlayerName
+    private static string _nickName;
+
+    public static string NickName
     {
-        get => PlayerPrefs.GetString("PlayerName", "Player");
-        set => PlayerPrefs.SetString("PlayerName", value);
+        get
+        {
+            if (string.IsNullOrWhiteSpace(_nickName))
+            {
+                var rngPlayer = Random.Range(0, 9999);
+                _nickName = $"Player {rngPlayer.ToString("0000")}";
+            }
+            return _nickName;
+        }
+        set => _nickName = value;
     }
 }

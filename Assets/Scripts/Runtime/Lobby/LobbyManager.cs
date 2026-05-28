@@ -3,143 +3,243 @@ using System.Collections.Generic;
 using UnityEngine;
 using Fusion;
 using Fusion.Sockets;
+using TMPro;
 
-public class LobbyManager : MonoBehaviour, INetworkRunnerCallbacks
+public class LobbyManager : NetworkBehaviour, INetworkRunnerCallbacks, IPlayerLeft, IStateAuthorityChanged
 {
+    [SerializeField] private TMP_InputField playerNameInput;
+
+    [Header("Panel")]
     [SerializeField] private GameObject connectingPanel;
     [SerializeField] private BrowseController browsePanel;
-    [SerializeField] private RoomManagementController createRoomPanel;
-    [SerializeField] private SessionController sessionPanel;
+    [SerializeField] private SessionManagementController sessionManagementPanel;
+    [SerializeField] private PlayerReadyController playerReadyPanel;
+
+    [Header("Prefab")]
     [SerializeField] private NetworkRunner runnerPrefab;
 
-    private NetworkRunner _runner;
-    private string _pendingMap;
+    [Networked, Capacity(2)]
+    private NetworkArray<LobbyPlayerData> Players { get => default; }
 
-    private void OnEnable() => LobbySessionController.OnStateChanged += OnSessionStateChanged;
-    private void OnDisable() => LobbySessionController.OnStateChanged -= OnSessionStateChanged;
+    [Networked, OnChangedRender(nameof(NotifyStateChanged))]
+    private NetworkString<_16> SelectedMap { get => default; set { } }
+
+    [Networked, OnChangedRender(nameof(NotifyStateChanged))]
+    private int DirtyFlag { get => default; set { } }
+
+    private NetworkRunner _lobbyRunner;
+    private string _pendingMap;
+    private bool _isMatchStarting;
 
     private void Start()
     {
-        browsePanel.OnJoinRoomRequested += JoinRoom;
+        browsePanel.OnJoinSessionRequested += JoinSession;
 
-        createRoomPanel.OnCreateRoomRequested += CreateRoom;
-        createRoomPanel.OnBackRequested += ShowBrowsePanel;
+        sessionManagementPanel.OnCreateSessionRequested += CreateSession;
+        sessionManagementPanel.OnBackRequested += ShowBrowsePanel;
 
-        sessionPanel.OnReadyClicked += () => LobbySessionController.Instance?.RequestToggleReady();
-        sessionPanel.OnMapSelected += mapName => LobbySessionController.Instance?.RequestSetMap(mapName);
+        playerReadyPanel.OnReadyClicked += RequestToggleReady;
 
         ShowBrowsePanel();
         connectingPanel.SetActive(true);
         ConnectToLobby();
     }
 
+    public override void Spawned()
+    {
+        if (Object.HasStateAuthority)
+        {
+            SelectedMap = "Map1";
+            AddPlayer(Runner.LocalPlayer, LocalPlayerData.NickName);
+        }
+        else
+        {
+            RPC_RequestJoin(LocalPlayerData.NickName);
+        }
+    }
+
+    public override void Despawned(NetworkRunner runner, bool hasState) { }
+
+    public void PlayerLeft(PlayerRef player)
+    {
+        if (Object.HasStateAuthority)
+            RemovePlayer(player);
+    }
+
+    public void StateAuthorityChanged() => NotifyStateChanged();
+
+    public void RequestToggleReady() => RPC_ToggleReady(Runner.LocalPlayer);
+
+    public void RequestSetMap(string mapName)
+    {
+        if (!Object.HasStateAuthority) return;
+        SelectedMap = mapName;
+    }
+
+    [Rpc(RpcSources.All, RpcTargets.StateAuthority)]
+    private void RPC_RequestJoin(NetworkString<_32> playerName, RpcInfo info = default)
+    {
+        AddPlayer(info.Source, playerName.ToString());
+    }
+
+    [Rpc(RpcSources.All, RpcTargets.StateAuthority)]
+    private void RPC_ToggleReady(PlayerRef playerRef)
+    {
+        for (int i = 0; i < Players.Length; i++)
+        {
+            if (Players[i].PlayerRef != playerRef) continue;
+
+            var slot = Players.Get(i);
+            slot.IsReady = !slot.IsReady;
+            Players.Set(i, slot);
+            BumpDirty();
+            TryStartMatch();
+            return;
+        }
+    }
+
+    private void AddPlayer(PlayerRef playerRef, string name)
+    {
+        for (int i = 0; i < Players.Length; i++)
+        {
+            if (!Players[i].IsEmpty) continue;
+
+            Players.Set(i, new LobbyPlayerData
+            {
+                PlayerRef = playerRef,
+                PlayerName = name,
+                IsReady = false
+            });
+            BumpDirty();
+            return;
+        }
+    }
+
+    private void RemovePlayer(PlayerRef playerRef)
+    {
+        for (int i = 0; i < Players.Length; i++)
+        {
+            if (Players[i].PlayerRef != playerRef) continue;
+
+            Players.Set(i, default);
+            BumpDirty();
+            return;
+        }
+    }
+
+    private void BumpDirty()
+    {
+        if (Object.HasStateAuthority) DirtyFlag++;
+    }
+
+    private void NotifyStateChanged()
+    {
+        if (!playerReadyPanel.IsVisible)
+        {
+            ShowSessionPanel();
+
+            if (Object.HasStateAuthority && !string.IsNullOrEmpty(_pendingMap))
+            {
+                RequestSetMap(_pendingMap);
+                _pendingMap = null;
+            }
+        }
+
+        playerReadyPanel.Refresh(Players, Runner.LocalPlayer);
+    }
+
     private void ShowBrowsePanel()
     {
         browsePanel.Show();
-        createRoomPanel.Hide();
-        sessionPanel.Hide();
-    }
-
-    private void ShowCreateRoomPanel()
-    {
-        browsePanel.Hide();
-        createRoomPanel.Show();
+        playerReadyPanel.Hide();
     }
 
     private void ShowSessionPanel()
     {
         browsePanel.Hide();
-        createRoomPanel.Hide();
-        sessionPanel.Show(_runner.SessionInfo.Name);
+        playerReadyPanel.Show();
     }
 
     private async void ConnectToLobby()
     {
-        _runner = FindFirstObjectByType<NetworkRunner>();
-        if (_runner == null )
-            _runner = Instantiate(runnerPrefab);
+        _lobbyRunner = FindFirstObjectByType<NetworkRunner>();
+        if (_lobbyRunner == null)
+            _lobbyRunner = Instantiate(runnerPrefab);
 
-        _runner.AddCallbacks(this);
-        var result = await _runner.JoinSessionLobby(SessionLobby.Shared);
+        _lobbyRunner.AddCallbacks(this);
+        var result = await _lobbyRunner.JoinSessionLobby(SessionLobby.Shared);
         if (result.Ok)
             connectingPanel.SetActive(false);
         else
             Debug.LogError($"[Lobby] JoinSessionLobby failed: {result.ShutdownReason}");
     }
 
-    private async void CreateRoom(string roomName, string playerName, string mapName)
+    private async void CreateSession(string sessionName, string mapName)
     {
-        LocalPlayerData.PlayerName = playerName;
+        LocalPlayerData.NickName = playerNameInput.text.Trim();
         _pendingMap = mapName;
 
         var props = new Dictionary<string, SessionProperty>
         {
-            { SessionKeys.HostName, playerName },
+            { SessionKeys.HostName, LocalPlayerData.NickName },
             { SessionKeys.CreatedTime, DateTime.Now.ToString("HHmmssfff") }
         };
 
-        var result = await _runner.StartGame(new StartGameArgs
+        var result = await _lobbyRunner.StartGame(new StartGameArgs
         {
             GameMode = GameMode.Shared,
-            SessionName = roomName,
+            SessionName = sessionName,
             SessionProperties = props,
             PlayerCount = 2,
         });
 
         if (!result.Ok)
-        {
-            Debug.LogError($"[Lobby] CreateRoom failed: {result.ShutdownReason}");
-            createRoomPanel.SetConfirmInteractable(true);
-        }
+            Debug.LogError($"[Lobby] CreateSession failed: {result.ShutdownReason}");
     }
 
-    private async void JoinRoom(string roomName)
+    private async void JoinSession(string sessionName)
     {
-        LocalPlayerData.PlayerName = browsePanel.PlayerName;
+        LocalPlayerData.NickName = playerNameInput.text.Trim();
 
-        var result = await _runner.StartGame(new StartGameArgs
+        var result = await _lobbyRunner.StartGame(new StartGameArgs
         {
             GameMode = GameMode.Shared,
-            SessionName = roomName,
+            SessionName = sessionName,
         });
 
         if (!result.Ok)
-            Debug.LogError($"[Lobby] JoinRoom failed: {result.ShutdownReason}");
+            Debug.LogError($"[Lobby] JoinSession failed: {result.ShutdownReason}");
     }
 
-    private void OnSessionStateChanged()
+    private void TryStartMatch()
     {
-        var ctrl = LobbySessionController.Instance;
-        if (ctrl == null) return;
+        if (!Object.HasStateAuthority || _isMatchStarting) return;
 
-        if (!sessionPanel.IsVisible)
-        {
-            ShowSessionPanel();
+        foreach (var p in Players)
+            if (p.IsEmpty || !p.IsReady) return;
 
-            if (ctrl.Object.HasStateAuthority && !string.IsNullOrEmpty(_pendingMap))
-            {
-                ctrl.RequestSetMap(_pendingMap);
-                _pendingMap = null;
-            }
-        }
-
-        sessionPanel.Refresh(ctrl.Players, ctrl.SelectedMap.ToString(), _runner.LocalPlayer, ctrl.Object.HasStateAuthority);
+        _isMatchStarting = true;
+        Runner.LoadScene(SelectedMap.ToString());
     }
 
     public void OnSessionListUpdated(NetworkRunner runner, List<SessionInfo> sessionList)
-        => browsePanel.UpdateSessions(sessionList);
+    {
+        browsePanel.UpdateSessions(sessionList);
+    }
 
     public void OnDisconnectedFromServer(NetworkRunner runner, NetDisconnectReason reason)
     {
         ShowBrowsePanel();
         connectingPanel.SetActive(true);
-        Destroy(_runner.gameObject);
-        _runner = null;
+        Destroy(_lobbyRunner.gameObject);
+        _lobbyRunner = null;
         ConnectToLobby();
     }
 
     public void OnStartGameFailed(NetworkRunner runner, ShutdownReason reason)
-        => Debug.LogError($"[Lobby] StartGame failed: {reason}");
+    {
+        Debug.LogError($"[Lobby] StartGame failed: {reason}");
+    }
 
     public void OnConnectedToServer(NetworkRunner runner) { }
     public void OnPlayerJoined(NetworkRunner runner, PlayerRef player) { }

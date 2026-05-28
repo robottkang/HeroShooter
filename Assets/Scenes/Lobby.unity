@@ -471,7 +471,7 @@ GameObject:
   - component: {fileID: 173551852}
   - component: {fileID: 173551851}
   m_Layer: 0
-  m_Name: LeaveRoomButton
+  m_Name: LeaveSessionButton
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -613,7 +613,7 @@ GameObject:
   - component: {fileID: 287207321}
   - component: {fileID: 287207318}
   m_Layer: 0
-  m_Name: RoomNameInput
+  m_Name: SessionNameInput
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -3353,8 +3353,9 @@ GameObject:
   - component: {fileID: 970571886}
   - component: {fileID: 970571885}
   - component: {fileID: 970571884}
+  - component: {fileID: 970571888}
   m_Layer: 0
-  m_Name: 'RoomInfomationPanel '
+  m_Name: 'PlayerReadyPanel '
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -3466,6 +3467,23 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 970571882}
   m_CullTransparentMesh: 1
+--- !u!114 &970571888
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 970571882}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 33019c14d37fde84b81b85485a317590, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerReadyController
+  player1InfoText: {fileID: 1868321411}
+  player2InfoText: {fileID: 693030220}
+  readyButton: {fileID: 1375342402}
+  unreadyColor: {r: 0.21960784, g: 0.47058824, b: 1, a: 1}
+  readyColor: {r: 0.91764706, g: 0.9150943, b: 0.25467247, a: 1}
 --- !u!1 &1022239241
 GameObject:
   m_ObjectHideFlags: 0
@@ -4003,7 +4021,7 @@ GameObject:
   - component: {fileID: 1413959966}
   - component: {fileID: 1413959963}
   m_Layer: 0
-  m_Name: CreateRoomButton
+  m_Name: CreateSessionButton
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -5670,7 +5688,7 @@ GameObject:
   - component: {fileID: 1967354487}
   - component: {fileID: 1967354491}
   m_Layer: 0
-  m_Name: RoomManagementPanel
+  m_Name: SessionManagementPanel
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -5797,17 +5815,18 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 42d3a8e893951ca48b99c625595a258a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CreateRoomPanelController
-  roomNameInput: {fileID: 0}
-  playerNameInput: {fileID: 0}
-  mapDropdown: {fileID: 0}
-  mapPreviewImage: {fileID: 0}
-  confirmButton: {fileID: 0}
-  backButton: {fileID: 0}
+  sessionNameInput: {fileID: 287207321}
+  mapDropdown: {fileID: 1535009348}
+  mapPreviewImage: {fileID: 586256325}
+  confirmButton: {fileID: 1413959966}
+  backButton: {fileID: 173551852}
   maps:
   - Map1
   - Map2
-  mapPreviewSprites: []
-  randomPreviewSprite: {fileID: 0}
+  mapPreviewSprites:
+  - {fileID: 21300000, guid: baec0cc52a001ec4989f163f70f113be, type: 3}
+  - {fileID: 21300000, guid: 7dc73f451ea000340bb844909bfcd22b, type: 3}
+  randomPreviewSprite: {fileID: 21300000, guid: 07ad24de65cbd2b4594eba7dcb0f5b97, type: 3}
 --- !u!1 &1979140499
 GameObject:
   m_ObjectHideFlags: 0
@@ -5822,7 +5841,7 @@ GameObject:
   - component: {fileID: 1979140502}
   - component: {fileID: 1979140501}
   m_Layer: 0
-  m_Name: RoomListScrollView
+  m_Name: SessionListScrollView
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -6212,11 +6231,11 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: bb8b48c11438d074f8536dd7ba3132d6, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::BrowsePanelController
+  m_EditorClassIdentifier: Assembly-CSharp::BrowseController
   defaultSessionCount: 5
   playerNameInput: {fileID: 718392000}
   searchInput: {fileID: 2038344691}
-  roomListContent: {fileID: 1653030226}
+  sessionListContent: {fileID: 1653030226}
   refreshButton: {fileID: 1454007282}
   sessionListItemPrefab: {fileID: 2958642587420763362, guid: a532821d30cdfd343847b9e403936075, type: 3}
 --- !u!1 &2038344686
@@ -6467,7 +6486,8 @@ MonoBehaviour:
   ObjectInterest: 1
   Flags: 262145
   NestedObjects: []
-  NetworkedBehaviours: []
+  NetworkedBehaviours:
+  - {fileID: 2074772007}
   ForceRemoteRenderTimeframe: 0
 --- !u!114 &2074772007
 MonoBehaviour:
@@ -6481,11 +6501,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ee50f7259e56c784482a7edfcc9affec, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::LobbyManager
+  playerNameInput: {fileID: 718392000}
   connectingPanel: {fileID: 8884250}
   browsePanel: {fileID: 2033128741}
-  createRoomPanel: {fileID: 0}
-  sessionPanel: {fileID: 0}
-  runnerPrefab: {fileID: 0}
+  sessionManagementPanel: {fileID: 1967354491}
+  playerReadyPanel: {fileID: 970571888}
+  runnerPrefab: {fileID: 2695227051466852230, guid: 6b3f7f9256234bf488b842f16d8e1cea, type: 3}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
