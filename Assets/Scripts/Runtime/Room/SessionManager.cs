@@ -3,7 +3,7 @@ using UnityEngine.UI;
 using Fusion;
 using Cysharp.Threading.Tasks;
 
-public class GameManager : SimulationBehaviour
+public class SessionManager : SimulationBehaviour
 {
     [SerializeField] private NetworkObject playerPrefab;
     [SerializeField] private GameObject localPlayerArmsPrefab;
@@ -17,11 +17,12 @@ public class GameManager : SimulationBehaviour
 #endif
 
 
-    private void Start()
+    private async void Start()
     {
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
 
+        await UniTask.WaitUntil(() => Runner != null);
         SpawnPlayer();
         Camera.main.gameObject.SetActive(false);
     }
