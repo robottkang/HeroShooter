@@ -18,8 +18,8 @@ public class SessionManagementController : MonoBehaviour
 
     private string _pendingMap;
 
-    public delegate void OnCreateSessionHandler (string sessionName);
-    public event Action<string, string> OnCreateSessionRequested;
+    public delegate void OnCreateSessionHandler (string sessionName, string mapName);
+    public event OnCreateSessionHandler OnCreateSessionRequested;
     public event Action OnBackRequested;
 
     private void Start()
@@ -56,8 +56,8 @@ public class SessionManagementController : MonoBehaviour
     {
         OnBackRequested?.Invoke();
 
-        confirmButton.gameObject.SetActive(false);
-        backButton.gameObject.SetActive(true);
+        confirmButton.gameObject.SetActive(true);
+        backButton.gameObject.SetActive(false);
     }
 
     private void OnMapSelected(int index)

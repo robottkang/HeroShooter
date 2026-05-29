@@ -15,8 +15,6 @@ public class PlayerReadyController : MonoBehaviour
 
     public event Action OnReadyClicked;
 
-    public bool IsVisible => gameObject.activeSelf;
-
     private void Start()
     {
         readyButton.onClick.AddListener(() => OnReadyClicked?.Invoke());
@@ -51,12 +49,12 @@ public class PlayerReadyController : MonoBehaviour
     {
         if (data.IsEmpty)
         {
-            label.text = "대기 중...";
+            label.text = "Waiting...";
             return;
         }
 
         string readyMark = data.IsReady ? " [READY]" : string.Empty;
-        string meMark = data.PlayerRef == localPlayer ? " (나)" : string.Empty;
+        string meMark = data.PlayerRef == localPlayer ? " (me)" : string.Empty;
         label.text = $"{data.PlayerName}{readyMark}{meMark}";
     }
 }

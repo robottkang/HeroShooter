@@ -1,9 +1,11 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using Fusion;
 using Fusion.Sockets;
 using TMPro;
+using Cysharp.Threading.Tasks;
 
 public class LobbyManager : NetworkBehaviour, INetworkRunnerCallbacks, IPlayerLeft, IStateAuthorityChanged
 {
@@ -33,20 +35,22 @@ public class LobbyManager : NetworkBehaviour, INetworkRunnerCallbacks, IPlayerLe
 
     private void Start()
     {
-        browsePanel.OnJoinSessionRequested += JoinSession;
+        browsePanel.OnJoinSessionRequested += sessionName => JoinSession(sessionName).Forget();
 
-        sessionManagementPanel.OnCreateSessionRequested += CreateSession;
+        sessionManagementPanel.OnCreateSessionRequested += (sessionName, mapName) => CreateSession(sessionName, mapName).Forget();
+        //sessionManagementPanel.OnCreateSessionRequested += (_, _) => NotifyStateChanged();
         sessionManagementPanel.OnBackRequested += ShowBrowsePanel;
 
         playerReadyPanel.OnReadyClicked += RequestToggleReady;
 
         ShowBrowsePanel();
         connectingPanel.SetActive(true);
-        ConnectToLobby();
+        ConnectToLobby().Forget();
     }
 
     public override void Spawned()
     {
+        Debug.Log("Spawned");
         if (Object.HasStateAuthority)
         {
             SelectedMap = "Map1";
@@ -58,7 +62,10 @@ public class LobbyManager : NetworkBehaviour, INetworkRunnerCallbacks, IPlayerLe
         }
     }
 
-    public override void Despawned(NetworkRunner runner, bool hasState) { }
+    public override void Despawned(NetworkRunner runner, bool hasState)
+    {
+        _lobbyRunner.RemoveCallbacks(this);
+    }
 
     public void PlayerLeft(PlayerRef player)
     {
@@ -134,15 +141,13 @@ public class LobbyManager : NetworkBehaviour, INetworkRunnerCallbacks, IPlayerLe
 
     private void NotifyStateChanged()
     {
-        if (!playerReadyPanel.IsVisible)
-        {
-            ShowSessionPanel();
+        ShowPlayerReadyPanel();
 
-            if (Object.HasStateAuthority && !string.IsNullOrEmpty(_pendingMap))
-            {
-                RequestSetMap(_pendingMap);
-                _pendingMap = null;
-            }
+        if (Object.HasStateAuthority &&
+            !string.IsNullOrEmpty(_pendingMap))
+        {
+            RequestSetMap(_pendingMap);
+            _pendingMap = null;
         }
 
         playerReadyPanel.Refresh(Players, Runner.LocalPlayer);
@@ -154,13 +159,13 @@ public class LobbyManager : NetworkBehaviour, INetworkRunnerCallbacks, IPlayerLe
         playerReadyPanel.Hide();
     }
 
-    private void ShowSessionPanel()
+    private void ShowPlayerReadyPanel()
     {
         browsePanel.Hide();
         playerReadyPanel.Show();
     }
 
-    private async void ConnectToLobby()
+    private async UniTask ConnectToLobby()
     {
         _lobbyRunner = FindFirstObjectByType<NetworkRunner>();
         if (_lobbyRunner == null)
@@ -174,7 +179,7 @@ public class LobbyManager : NetworkBehaviour, INetworkRunnerCallbacks, IPlayerLe
             Debug.LogError($"[Lobby] JoinSessionLobby failed: {result.ShutdownReason}");
     }
 
-    private async void CreateSession(string sessionName, string mapName)
+    private async UniTask CreateSession(string sessionName, string mapName)
     {
         LocalPlayerData.NickName = playerNameInput.text.Trim();
         _pendingMap = mapName;
@@ -191,13 +196,16 @@ public class LobbyManager : NetworkBehaviour, INetworkRunnerCallbacks, IPlayerLe
             SessionName = sessionName,
             SessionProperties = props,
             PlayerCount = 2,
+            Scene = SceneRef.FromIndex(SceneManager.GetActiveScene().buildIndex),
         });
 
-        if (!result.Ok)
+        if (result.Ok)
+            ShowPlayerReadyPanel();
+        else
             Debug.LogError($"[Lobby] CreateSession failed: {result.ShutdownReason}");
     }
 
-    private async void JoinSession(string sessionName)
+    private async UniTask JoinSession(string sessionName)
     {
         LocalPlayerData.NickName = playerNameInput.text.Trim();
 
@@ -205,10 +213,13 @@ public class LobbyManager : NetworkBehaviour, INetworkRunnerCallbacks, IPlayerLe
         {
             GameMode = GameMode.Shared,
             SessionName = sessionName,
+            Scene = SceneRef.FromIndex(SceneManager.GetActiveScene().buildIndex),
         });
 
-        if (!result.Ok)
-            Debug.LogError($"[Lobby] JoinSession failed: {result.ShutdownReason}");
+        if (result.Ok)
+            ShowPlayerReadyPanel();
+        else
+            Debug.LogError($"[Lobby] CreateSession failed: {result.ShutdownReason}");
     }
 
     private void TryStartMatch()
@@ -218,8 +229,15 @@ public class LobbyManager : NetworkBehaviour, INetworkRunnerCallbacks, IPlayerLe
         foreach (var p in Players)
             if (p.IsEmpty || !p.IsReady) return;
 
+        if (Object.HasStateAuthority)
+        {
+            _lobbyRunner.SessionInfo.IsVisible = false;
+            _lobbyRunner.SessionInfo.IsOpen = false;
+        }
+
         _isMatchStarting = true;
-        Runner.LoadScene(SelectedMap.ToString());
+        int buildIndex = SceneUtility.GetBuildIndexByScenePath($"Assets/Scenes/{SelectedMap}.unity");
+        Runner.LoadScene(SceneRef.FromIndex(buildIndex));
     }
 
     public void OnSessionListUpdated(NetworkRunner runner, List<SessionInfo> sessionList)
@@ -233,7 +251,7 @@ public class LobbyManager : NetworkBehaviour, INetworkRunnerCallbacks, IPlayerLe
         connectingPanel.SetActive(true);
         Destroy(_lobbyRunner.gameObject);
         _lobbyRunner = null;
-        ConnectToLobby();
+        ConnectToLobby().Forget();
     }
 
     public void OnStartGameFailed(NetworkRunner runner, ShutdownReason reason)

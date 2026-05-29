@@ -59,7 +59,7 @@ public class BrowseController : MonoBehaviour
             if (!hasSearch && count >= redrawSessionCount) break;
 
             string hostName = session.Properties.TryGetValue(SessionKeys.HostName, out var hn)
-                ? hn.ToString() : "Unknown";
+                ? hn.PropertyValue.ToString() : "Unknown";
 
             string capturedName = session.Name;
             var go = Instantiate(sessionListItemPrefab, sessionListContent);
