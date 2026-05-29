@@ -3,10 +3,14 @@ using UnityEngine.InputSystem;
 using System;
 using Fusion;
 
-public class FirstPersonController : NetworkBehaviour
+public class FirstPersonController : MonoBehaviour//NetworkBehaviour
 {
     [Header("Input")]
     [SerializeField] private InputActionAsset actionAsset;
+
+    [Header("Body")]
+    [SerializeField] private Transform remoteBody;
+    [SerializeField] private Transform localBody;
 
     [Header("Speed")]
     [SerializeField] private float walkSpeed = 5f;
@@ -26,37 +30,80 @@ public class FirstPersonController : NetworkBehaviour
     [SerializeField] private float crouchCameraY = 0.8f;
 
     [Header("Look")]
-    [SerializeField] private float mouseSensitivity = 0.15f;
+    [SerializeField] private Vector2 mouseSensitivity = new Vector2(1f, 1f);
     [SerializeField] private float maxPitchAngle = 80f;
+    [SerializeField] private float normalViewAngle = 60f;
+    [SerializeField] private float aimmingViewAngle = 45f;
+    [SerializeField] private float angleSwitchingTime = 0.3f;
     [SerializeField] private PlayerCameraController cameraHolder;
 
-    [Networked] private Vector3 NetworkedPosition { get => default; set { } }
-    [Networked] private Quaternion NetworkedRotation { get => default; set { } }
-    [Networked] private float NetworkedCamPitch { get => default; set { } }
-    [Networked] public NetworkBool IsCrouching { get => default; set { } }
+    [Networked] private Vector3 NetworkedPosition { get; set; }
+    [Networked] private Quaternion NetworkedRotation { get; set; }
+    [Networked] private float NetworkedCamPitch { get; set; }
+    [Networked] public NetworkBool IsCrouching { get; private set; }
 
     private CharacterController _cc;
 
-    private InputAction _moveAction;
-    private InputAction _lookAction;
-    private InputAction _jumpAction;
-    private InputAction _sprintAction;
-    private InputAction _crouchAction;
+    private InputAction _moveAction, _lookAction, _jumpAction, _sprintAction, _crouchAction, _aimAction, _attackAction;
 
+    private IWeapon equippedWeapon;
     private Vector2 _moveInput;
     private Vector2 _lookInput;
     private float _verticalVelocity;
     private float _xRotation;
     private float _jumpBufferTimer;
     private float _airSpeed = 5f;
+    private bool _isSprinting;
+    private bool _isAiming;
 
     public event Action OnJump;
     public Vector2 MoveInput => _moveInput;
     public bool IsGrounded => _cc.isGrounded;
-    public bool IsSprinting => !IsCrouching && _sprintAction != null && _sprintAction.IsPressed();
+    public bool IsSprinting => _isSprinting;
+    public bool IsAiming => _isAiming;
     public float WalkSpeed => walkSpeed;
     public float RunSpeed => runSpeed;
 
+    private void Awake()
+    {
+        _cc = GetComponent<CharacterController>();
+
+        _cc.height = standHeight;
+        _cc.center = Vector3.up * (standHeight / 2f);
+
+        var playerMap = actionAsset.FindActionMap("Player", true);
+        _moveAction = playerMap.FindAction("Move", true);
+        _lookAction = playerMap.FindAction("Look", true);
+        _jumpAction = playerMap.FindAction("Jump", true);
+        _sprintAction = playerMap.FindAction("Sprint", true);
+        _crouchAction = playerMap.FindAction("Crouch", true);
+        _attackAction = playerMap.FindAction("Attack", true);
+        _aimAction = playerMap.FindAction("Aim", true);
+
+        _moveAction.Enable();
+        _lookAction.Enable();
+        _jumpAction.Enable();
+        _sprintAction.Enable();
+        _crouchAction.Enable();
+        _attackAction.Enable();
+        _aimAction.Enable();
+    }
+
+    private void Update()
+    {
+        _moveInput = _moveAction.ReadValue<Vector2>();
+        _lookInput = _lookAction.ReadValue<Vector2>();
+
+        HandleCrouch();
+        HandleJumpBuffer();
+        HandleLook();
+        HandleMovement();
+        HandleCrouchTransition();
+        HandleAimming();
+        HandleAttack();
+    }
+
+    /*
     public override void Spawned()
     {
         _cc = GetComponent<CharacterController>();
@@ -122,7 +169,7 @@ public class FirstPersonController : NetworkBehaviour
             camRot = Quaternion.Lerp(camRot, Quaternion.Euler(NetworkedCamPitch, 0, 0), Time.deltaTime * 15f);
             cameraHolder.transform.localRotation = camRot;
         }
-    }
+    }*/
 
     private void HandleCrouch()
     {
@@ -134,19 +181,21 @@ public class FirstPersonController : NetworkBehaviour
 
     private void HandleJumpBuffer()
     {
-        if (_jumpAction.WasPressedThisFrame() && !IsCrouching)
-            _jumpBufferTimer = jumpBufferTime;
+        _jumpBufferTimer -= Time.deltaTime;
 
-        _jumpBufferTimer -= Runner.DeltaTime;
+        if (_jumpAction.WasPressedThisFrame() && !IsCrouching)
+        {
+            _jumpBufferTimer = jumpBufferTime;
+        }
     }
 
     private void HandleLook()
     {
-        _xRotation -= _lookInput.y * mouseSensitivity;
+        _xRotation -= _lookInput.y * mouseSensitivity.x;
         _xRotation = Mathf.Clamp(_xRotation, -maxPitchAngle, maxPitchAngle);
 
         cameraHolder.transform.localRotation = Quaternion.Euler(_xRotation, 0f, 0f);
-        transform.Rotate(_lookInput.x * mouseSensitivity * Vector3.up);
+        transform.Rotate(_lookInput.x * mouseSensitivity.y * Vector3.up);
     }
 
     private void HandleMovement()
@@ -154,8 +203,8 @@ public class FirstPersonController : NetworkBehaviour
         if (_cc.isGrounded && _verticalVelocity < 0f)
             _verticalVelocity = -2f;
 
-        bool isSprinting = !IsCrouching && _sprintAction.IsPressed();
-        float speed = IsCrouching ? crouchSpeed : (isSprinting ? runSpeed : walkSpeed);
+        _isSprinting = !IsCrouching && _sprintAction.IsPressed();
+        float speed = IsCrouching ? crouchSpeed : (_isSprinting ? runSpeed : walkSpeed);
 
         if (_cc.isGrounded)
             _airSpeed = speed;
@@ -185,6 +234,19 @@ public class FirstPersonController : NetworkBehaviour
         cameraHolder.transform.localPosition = camPos;
     }
 
+    private void HandleAimming()
+    {
+        _isAiming = _aimAction.IsPressed();
+        var targetAngle = _isAiming ? aimmingViewAngle : normalViewAngle;
+        
+        cameraHolder.SetFieldOfView(targetAngle, angleSwitchingTime);
+    }
+    private void HandleAttack()
+    {
+        if (_attackAction.WasPressedThisFrame())
+            equippedWeapon.Fire();
+    }
+
     private bool CanStandUp()
     {
         Vector3 origin = transform.position + Vector3.up * _cc.height;
@@ -192,7 +254,7 @@ public class FirstPersonController : NetworkBehaviour
         return !Physics.SphereCast(origin, _cc.radius * 0.9f, Vector3.up, out _, checkDistance + 0.05f);
     }
 
-    [Rpc(RpcSources.InputAuthority, RpcTargets.All)]
+    //[Rpc(RpcSources.InputAuthority, RpcTargets.All)]
     private void RPC_Jump()
     {
         OnJump?.Invoke();
@@ -210,6 +272,5 @@ public class FirstPersonController : NetworkBehaviour
         go.layer = layer;
         foreach (Transform child in go.transform)
             SetLayerRecursively(child.gameObject, layer);
-
     }
 }

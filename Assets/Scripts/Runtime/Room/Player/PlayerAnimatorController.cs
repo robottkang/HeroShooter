@@ -29,12 +29,10 @@ public class PlayerAnimatorController : MonoBehaviour
 
     private void Update()
     {
-        // 수평 이동 속도만 추출해 로컬 공간으로 변환
         Vector3 worldVel = _cc.velocity;
         worldVel.y = 0f;
         Vector3 localVel = fpc.transform.InverseTransformDirection(worldVel);
 
-        // 0.1f dampTime으로 부드럽게 블렌딩
         _anim.SetFloat(VelocityXId, localVel.x, 0.1f, Time.deltaTime);
         _anim.SetFloat(VelocityYId, localVel.z, 0.1f, Time.deltaTime);
         _anim.SetBool(IsCrouchingId, fpc.IsCrouching);

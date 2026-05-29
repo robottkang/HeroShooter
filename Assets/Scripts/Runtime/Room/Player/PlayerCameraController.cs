@@ -10,6 +10,12 @@ public class PlayerCameraController : MonoBehaviour
         ActiveLocalCamera();
     }
 
+    public void SetFieldOfView(float angle, float during)
+    {
+        localCamera.fieldOfView = angle;
+        Mathf.Lerp(localCamera.fieldOfView, angle, Time.deltaTime / during);
+    }
+
     public void ActiveRemoteCamera()
     {
         remoteCamera.gameObject.SetActive(true);
