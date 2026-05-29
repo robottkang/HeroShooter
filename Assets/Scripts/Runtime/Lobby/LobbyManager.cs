@@ -21,13 +21,13 @@ public class LobbyManager : NetworkBehaviour, INetworkRunnerCallbacks, IPlayerLe
     [SerializeField] private NetworkRunner runnerPrefab;
 
     [Networked, Capacity(2)]
-    private NetworkArray<LobbyPlayerData> Players { get => default; }
+    private NetworkArray<LobbyPlayerData> Players { get; }
 
     [Networked, OnChangedRender(nameof(NotifyStateChanged))]
-    private NetworkString<_16> SelectedMap { get => default; set { } }
+    private NetworkString<_16> SelectedMap { get; set; }
 
     [Networked, OnChangedRender(nameof(NotifyStateChanged))]
-    private int DirtyFlag { get => default; set { } }
+    private int DirtyFlag { get; set; }
 
     private NetworkRunner _lobbyRunner;
     private string _pendingMap;
