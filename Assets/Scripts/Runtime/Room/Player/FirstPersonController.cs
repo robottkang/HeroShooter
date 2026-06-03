@@ -29,6 +29,9 @@ public class FirstPersonController : MonoBehaviour//NetworkBehaviour
     [SerializeField] private float standCameraY = 1.8f;
     [SerializeField] private float crouchCameraY = 0.8f;
 
+    [Header("Weapon")]
+    [SerializeField] private WeaponInventory weaponInventory;
+
     [Header("Look")]
     [SerializeField] private Vector2 mouseSensitivity = new Vector2(1f, 1f);
     [SerializeField] private float maxPitchAngle = 80f;
@@ -44,9 +47,18 @@ public class FirstPersonController : MonoBehaviour//NetworkBehaviour
 
     private CharacterController _cc;
 
-    private InputAction _moveAction, _lookAction, _jumpAction, _sprintAction, _crouchAction, _aimAction, _attackAction;
+    private InputAction _moveAction, _lookAction, _jumpAction, _sprintAction, _crouchAction, _reloadAction, _aimAction, _attackAction;
 
-    private IWeapon equippedWeapon;
+    private WeaponBase _equippedWeapon;
+
+    private void Start()
+    {
+        if (weaponInventory != null)
+        {
+            _equippedWeapon = weaponInventory.CurrentWeapon;
+            weaponInventory.OnWeaponChanged += weapon => _equippedWeapon = weapon;
+        }
+    }
     private Vector2 _moveInput;
     private Vector2 _lookInput;
     private float _verticalVelocity;
@@ -77,6 +89,7 @@ public class FirstPersonController : MonoBehaviour//NetworkBehaviour
         _jumpAction = playerMap.FindAction("Jump", true);
         _sprintAction = playerMap.FindAction("Sprint", true);
         _crouchAction = playerMap.FindAction("Crouch", true);
+        _reloadAction = playerMap.FindAction("Reload", true);
         _attackAction = playerMap.FindAction("Attack", true);
         _aimAction = playerMap.FindAction("Aim", true);
 
@@ -85,6 +98,7 @@ public class FirstPersonController : MonoBehaviour//NetworkBehaviour
         _jumpAction.Enable();
         _sprintAction.Enable();
         _crouchAction.Enable();
+        _reloadAction.Enable();
         _attackAction.Enable();
         _aimAction.Enable();
     }
@@ -99,6 +113,7 @@ public class FirstPersonController : MonoBehaviour//NetworkBehaviour
         HandleLook();
         HandleMovement();
         HandleCrouchTransition();
+        HandleReload();
         HandleAimming();
         HandleAttack();
     }
@@ -241,10 +256,22 @@ public class FirstPersonController : MonoBehaviour//NetworkBehaviour
         
         cameraHolder.SetFieldOfView(targetAngle, angleSwitchingTime);
     }
+
+    private void HandleReload()
+    {
+        if (_reloadAction.WasPressedThisFrame())
+            _equippedWeapon.Reload();
+    }
+
     private void HandleAttack()
     {
-        if (_attackAction.WasPressedThisFrame())
-            equippedWeapon.Fire();
+        if (_equippedWeapon == null) return;
+
+        bool justPressed = _attackAction.WasPressedThisFrame();
+        bool shouldFire = _equippedWeapon.IsAutomatic ? _attackAction.IsPressed() : justPressed;
+
+        if (shouldFire)
+            _equippedWeapon.Fire(justPressed);
     }
 
     private bool CanStandUp()
