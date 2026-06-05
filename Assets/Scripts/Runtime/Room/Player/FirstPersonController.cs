@@ -35,9 +35,6 @@ public class FirstPersonController : MonoBehaviour//NetworkBehaviour
     [Header("Look")]
     [SerializeField] private Vector2 mouseSensitivity = new Vector2(1f, 1f);
     [SerializeField] private float maxPitchAngle = 80f;
-    [SerializeField] private float normalViewAngle = 60f;
-    [SerializeField] private float aimmingViewAngle = 45f;
-    [SerializeField] private float angleSwitchingTime = 0.3f;
     [SerializeField] private PlayerCameraController cameraHolder;
 
     [Networked] private Vector3 NetworkedPosition { get; set; }
@@ -70,6 +67,7 @@ public class FirstPersonController : MonoBehaviour//NetworkBehaviour
 
     private bool IsActionBlocked => _isSprinting || weaponInventory.IsSwitching;
 
+    public event Action<bool> OnAimingChanged;
     public event Action OnJump;
     public Vector2 MoveInput => _moveInput;
     public bool IsGrounded => _cc.isGrounded;
@@ -116,7 +114,7 @@ public class FirstPersonController : MonoBehaviour//NetworkBehaviour
         HandleMovement();
         HandleCrouchTransition();
         HandleReload();
-        HandleAimming();
+        HandleAiming();
         HandleAttack();
     }
 
@@ -255,12 +253,16 @@ public class FirstPersonController : MonoBehaviour//NetworkBehaviour
         cameraHolder.transform.localPosition = camPos;
     }
 
-    private void HandleAimming()
+    private void HandleAiming()
     {
-        _isAiming = _aimAction.IsPressed() && !IsActionBlocked && !_equippedWeapon.IsReloading;
-        var targetAngle = _isAiming ? aimmingViewAngle : normalViewAngle;
+        bool next = _aimAction.IsPressed() && !IsActionBlocked && !_equippedWeapon.IsReloading;
 
-        cameraHolder.SetFieldOfView(targetAngle, angleSwitchingTime);
+        if (next != _isAiming)
+        {
+            _isAiming = next;
+            OnAimingChanged?.Invoke(_isAiming);
+            cameraHolder.SetFieldOfView(_isAiming).Forget();
+        }
     }
 
     private void HandleReload()

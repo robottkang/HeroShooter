@@ -163,4 +163,10 @@ public abstract class WeaponBase : MonoBehaviour
         await UniTask.WaitForSeconds(delay);
         muzzleFlashVFX.Stop();
     }
+
+    private void OnDrawGizmos()
+    {
+        Gizmos.color = Color.red;
+        Gizmos.DrawLine(_playerCamera.transform.position, _playerCamera.transform.position + _playerCamera.transform.forward * range);
+    }
 }

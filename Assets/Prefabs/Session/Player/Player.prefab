@@ -2733,6 +2733,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Health
   maxHealth: 100
+  current: 0
 --- !u!114 &3825796302250068311
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2745,7 +2746,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f2de8ff390e0d2f4a96df38c89d2cd75, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerUISpawner
-  hudManager: {fileID: 9187413141315165140, guid: aa27ee5e4748d3a469696c3a78a8afa8, type: 3}
+  hudManagerPrefab: {fileID: 921204849103990248, guid: aa27ee5e4748d3a469696c3a78a8afa8, type: 3}
 --- !u!114 &3319058786258908537
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2927,11 +2928,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4246605869859019545, guid: 8580b9cfc2513564c87274d75aedeb37, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -0
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 4246605869859019545, guid: 8580b9cfc2513564c87274d75aedeb37, type: 3}
       propertyPath: m_LocalPosition.z
-      value: -0
+      value: -0.003
       objectReference: {fileID: 0}
     - target: {fileID: 4246605869859019545, guid: 8580b9cfc2513564c87274d75aedeb37, type: 3}
       propertyPath: m_LocalRotation.w

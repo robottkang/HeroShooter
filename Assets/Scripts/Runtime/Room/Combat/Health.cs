@@ -1,15 +1,15 @@
+using Fusion;
 using System;
 using UnityEngine;
 
 public class Health : MonoBehaviour, IDamageable
 {
     [SerializeField] private float maxHealth = 100f;
+    [SerializeField, ReadOnly] private float current;
 
-    private float _current;
-
-    public float Current => _current;
+    public float Current => current;
     public float Max => maxHealth;
-    public bool IsDead => _current <= 0f;
+    public bool IsDead => current <= 0f;
 
     public delegate void OnHealthChangedHandler(float currentHealth, float maxHealth); 
     public event OnHealthChangedHandler OnHealthChanged;
@@ -17,17 +17,17 @@ public class Health : MonoBehaviour, IDamageable
 
     private void Awake()
     {
-        _current = maxHealth;
+        current = maxHealth;
     }
 
     public void TakeDamage(float amount)
     {
         if (IsDead) return;
 
-        _current = Mathf.Max(0f, _current - amount);
-        OnHealthChanged?.Invoke(_current, maxHealth);
+        current = Mathf.Max(0f, current - amount);
+        OnHealthChanged?.Invoke(current, maxHealth);
 
-        if (_current == 0f)
+        if (current == 0f)
             OnDied?.Invoke();
     }
 
@@ -35,7 +35,7 @@ public class Health : MonoBehaviour, IDamageable
     {
         if (IsDead) return;
 
-        _current = Mathf.Min(maxHealth, _current + amount);
-        OnHealthChanged?.Invoke(_current, maxHealth);
+        current = Mathf.Min(maxHealth, current + amount);
+        OnHealthChanged?.Invoke(current, maxHealth);
     }
 }

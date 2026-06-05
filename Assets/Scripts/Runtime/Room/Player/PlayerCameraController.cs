@@ -1,3 +1,4 @@
+using Cysharp.Threading.Tasks;
 using UnityEngine;
 
 public class PlayerCameraController : MonoBehaviour
@@ -5,14 +6,29 @@ public class PlayerCameraController : MonoBehaviour
     [SerializeField] private Camera remoteCamera;
     [SerializeField] private Camera localCamera;
 
+    [SerializeField] private float normalViewAngle = 60f;
+    [SerializeField] private float aimmingViewAngle = 45f;
+    [SerializeField] private float angleSwitchingDuration = 0.3f;
+
     private void Start()
     {
         ActiveLocalCamera();
     }
 
-    public void SetFieldOfView(float angle, float during)
+    public async UniTaskVoid SetFieldOfView(bool isAiming)
     {
-        Mathf.Lerp(localCamera.fieldOfView, angle, Time.deltaTime / during);
+        var targetAngle = isAiming ? aimmingViewAngle : normalViewAngle;
+        float start = localCamera.fieldOfView;
+        float elapsed = 0f;
+
+        while (elapsed < angleSwitchingDuration)
+        {
+            elapsed += Time.deltaTime;
+            localCamera.fieldOfView = Mathf.Lerp(start, targetAngle, elapsed / angleSwitchingDuration);
+            await UniTask.Yield();
+        }
+
+        localCamera.fieldOfView = targetAngle;
     }
 
     public void ActiveRemoteCamera()
