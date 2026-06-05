@@ -1,5 +1,7 @@
+using Cysharp.Threading.Tasks;
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.InputSystem.Controls;
@@ -7,13 +9,17 @@ using UnityEngine.InputSystem.Controls;
 public class WeaponInventory : MonoBehaviour
 {
     [SerializeField] private Camera playerCamera;
-    [SerializeField] private float switchCooldown = 0.1f;
+    [SerializeField] private FPArmsAnimatorController armsAnimator;
 
     private readonly List<WeaponBase> _weapons = new();
     private int _currentIndex = -1;
-    private float _lastSwitchTime = float.MinValue;
+    private CancellationTokenSource _switchCts;
+    private bool _isSwitching;
 
     public WeaponBase CurrentWeapon => _currentIndex >= 0 ? _weapons[_currentIndex] : null;
+    public IReadOnlyList<WeaponBase> Weapons => _weapons;
+    public int CurrentIndex => _currentIndex;
+    public bool IsSwitching => _isSwitching;
     public event Action<WeaponBase> OnWeaponChanged;
 
     private void Awake()
@@ -72,8 +78,36 @@ public class WeaponInventory : MonoBehaviour
     {
         if (index < 0 || index >= _weapons.Count) return;
         if (index == _currentIndex) return;
-        if (Time.time - _lastSwitchTime < switchCooldown) return;
+        _switchCts?.Cancel();
+        _switchCts?.Dispose();
+        _switchCts = new CancellationTokenSource();
+        EquipAsync(index, _switchCts.Token).Forget();
+    }
+
+    private async UniTaskVoid EquipAsync(int index, CancellationToken token)
+    {
+        _isSwitching = true;
+
+        bool holsterDone = false;
+        void OnDone() => holsterDone = true;
+        armsAnimator.OnHolsterEnded += OnDone;
+        armsAnimator.SetHolstered(true);
+
+        try
+        {
+            await UniTask.WaitUntil(() => holsterDone, cancellationToken: token);
+        }
+        catch (OperationCanceledException)
+        {
+            armsAnimator.OnHolsterEnded -= OnDone;
+            _isSwitching = false;
+            return;
+        }
+
+        armsAnimator.OnHolsterEnded -= OnDone;
         EquipInternal(index);
+        armsAnimator.SetHolstered(false);
+        _isSwitching = false;
     }
 
     private void EquipInternal(int index)
@@ -85,7 +119,6 @@ public class WeaponInventory : MonoBehaviour
         }
 
         _currentIndex = index;
-        _lastSwitchTime = Time.time;
         _weapons[_currentIndex].gameObject.SetActive(true);
         OnWeaponChanged?.Invoke(CurrentWeapon);
     }

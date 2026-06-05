@@ -77,7 +77,7 @@ Animator:
   m_GameObject: {fileID: 612843162308975235}
   m_Enabled: 1
   m_Avatar: {fileID: 9000000, guid: bfda376b0f658a748870ea8f7c2c7c03, type: 3}
-  m_Controller: {fileID: 0}
+  m_Controller: {fileID: 22100000, guid: 290925d56c590904889ea4825dd212b8, type: 2}
   m_CullingMode: 1
   m_UpdateMode: 0
   m_ApplyRootMotion: 1
@@ -101,6 +101,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: dea88ed20f4a8244a8de24fad1ef4082, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Rifle
+  bodySprite: {fileID: 21300000, guid: bcc477d9e47ffcf41acc147a6fc51cf9, type: 3}
+  magazineSprite: {fileID: 21300000, guid: 51d720b69910c244aa44a082bddf0155, type: 3}
+  scopeSprite: {fileID: 21300000, guid: bbbb29d2cf3c91741bc1a1b953ca5776, type: 3}
   damage: 30
   magazineSize: 20
   reserveAmmo: 80
@@ -114,6 +117,7 @@ MonoBehaviour:
   casingEjectPoint: {fileID: 6726877574889619912}
   muzzleFlashVFX: {fileID: 1061202606452549327}
   casingPrefab: {fileID: 8659440048784651059, guid: a7aba8d1675cc7342ad97982012e7fc4, type: 3}
+  controller: {fileID: 22100000, guid: 1288116e5192cd84b808721e453eb7e7, type: 2}
   fireClip: {fileID: 8300000, guid: 9e9480b4d07646942b555fd43f2a0f71, type: 3}
   fireEmptyClip: {fileID: 8300000, guid: 0c187ee2790c74c4e9985aa1ee1a12d5, type: 3}
   reloadClip: {fileID: 8300000, guid: 778c7be53403f9e45804f5a61a13a3e6, type: 3}
@@ -127,7 +131,7 @@ AudioSource:
   m_GameObject: {fileID: 612843162308975235}
   m_Enabled: 1
   serializedVersion: 4
-  OutputAudioMixerGroup: {fileID: 0}
+  OutputAudioMixerGroup: {fileID: 6063010141522839549, guid: 3fcdb23bde063e94fa0b60ccf87604d6, type: 2}
   m_audioClip: {fileID: 0}
   m_Resource: {fileID: 0}
   m_PlayOnAwake: 1

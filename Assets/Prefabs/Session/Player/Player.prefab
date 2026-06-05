@@ -619,6 +619,7 @@ GameObject:
   m_Component:
   - component: {fileID: 2413713690696479103}
   - component: {fileID: 2413713690703634167}
+  - component: {fileID: 8627560567405338782}
   m_Layer: 0
   m_Name: SK_FP_CH_Default_Cubic
   m_TagString: Untagged
@@ -635,7 +636,7 @@ Transform:
   m_GameObject: {fileID: 2413713690696248479}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: -1.65, z: 0.02}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -653,7 +654,7 @@ Animator:
   m_GameObject: {fileID: 2413713690696248479}
   m_Enabled: 1
   m_Avatar: {fileID: 9000000, guid: b0299d1388028864e9874bcacb6c2123, type: 3}
-  m_Controller: {fileID: 0}
+  m_Controller: {fileID: 9100000, guid: 027ae8cddc85a484fa5fd415d19d7a8e, type: 2}
   m_CullingMode: 0
   m_UpdateMode: 0
   m_ApplyRootMotion: 1
@@ -665,6 +666,20 @@ Animator:
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
   m_WriteDefaultValuesOnDisable: 0
+--- !u!114 &8627560567405338782
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2413713690696248479}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bbe1ceb6995e4db43a6ddfa569b2f49d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::FPArmsAnimatorController
+  fpc: {fileID: 5799965577927399923}
+  weaponInventory: {fileID: 6294705494504188549}
 --- !u!1 &2413713690696248497
 GameObject:
   m_ObjectHideFlags: 0
@@ -2537,7 +2552,7 @@ Camera:
     y: 0
     width: 1
     height: 1
-  near clip plane: 0.22
+  near clip plane: 0.01
   far clip plane: 1000
   field of view: 60
   orthographic: 0
@@ -2621,6 +2636,7 @@ GameObject:
   - component: {fileID: 4151063621855169108}
   - component: {fileID: 5799965577927399923}
   - component: {fileID: 8907916417740226833}
+  - component: {fileID: 3825796302250068311}
   - component: {fileID: 3319058786258908537}
   m_Layer: 7
   m_Name: Player
@@ -2702,7 +2718,7 @@ MonoBehaviour:
   maxPitchAngle: 80
   normalViewAngle: 60
   aimmingViewAngle: 45
-  angleSwitchingTime: 0.3
+  angleSwitchingTime: 1
   cameraHolder: {fileID: 2177891503593820559}
 --- !u!114 &8907916417740226833
 MonoBehaviour:
@@ -2717,6 +2733,19 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Health
   maxHealth: 100
+--- !u!114 &3825796302250068311
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6538525284220438900}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f2de8ff390e0d2f4a96df38c89d2cd75, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerUISpawner
+  hudManager: {fileID: 9187413141315165140, guid: aa27ee5e4748d3a469696c3a78a8afa8, type: 3}
 --- !u!114 &3319058786258908537
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2800,7 +2829,7 @@ Camera:
     y: 0
     width: 1
     height: 1
-  near clip plane: 0.22
+  near clip plane: 0.01
   far clip plane: 1000
   field of view: 60
   orthographic: 0
@@ -2884,6 +2913,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: Inventory
       objectReference: {fileID: 0}
+    - target: {fileID: 3494939015267388087, guid: 8580b9cfc2513564c87274d75aedeb37, type: 3}
+      propertyPath: armsAnimator
+      value: 
+      objectReference: {fileID: 8627560567405338782}
     - target: {fileID: 3494939015267388087, guid: 8580b9cfc2513564c87274d75aedeb37, type: 3}
       propertyPath: playerCamera
       value: 
@@ -3296,8 +3329,54 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 8430ac8947516734fbbc65df12a1a2c1, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 798272960007561720}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 8430ac8947516734fbbc65df12a1a2c1, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 278669042080570768}
   m_SourcePrefab: {fileID: 100100000, guid: 8430ac8947516734fbbc65df12a1a2c1, type: 3}
+--- !u!1 &8149378824270968675 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: 8430ac8947516734fbbc65df12a1a2c1, type: 3}
+  m_PrefabInstance: {fileID: 9068280479711480370}
+  m_PrefabAsset: {fileID: 0}
+--- !u!95 &798272960007561720
+Animator:
+  serializedVersion: 7
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8149378824270968675}
+  m_Enabled: 1
+  m_Avatar: {fileID: 9000000, guid: 8430ac8947516734fbbc65df12a1a2c1, type: 3}
+  m_Controller: {fileID: 9100000, guid: 2dd1e9ed629e24e409783581266f84ca, type: 2}
+  m_CullingMode: 0
+  m_UpdateMode: 0
+  m_ApplyRootMotion: 0
+  m_LinearVelocityBlending: 0
+  m_StabilizeFeet: 0
+  m_AnimatePhysics: 0
+  m_WarningMessage: 
+  m_HasTransformHierarchy: 1
+  m_AllowConstantClipSamplingOptimization: 1
+  m_KeepAnimatorStateOnDisable: 0
+  m_WriteDefaultValuesOnDisable: 0
+--- !u!114 &278669042080570768
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8149378824270968675}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ae050bb25488cd049acca76e2c5f616a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerAnimatorController
+  fpc: {fileID: 5799965577927399923}
 --- !u!4 &8814591693621997017 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: 8430ac8947516734fbbc65df12a1a2c1, type: 3}

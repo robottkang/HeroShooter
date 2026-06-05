@@ -12,7 +12,6 @@ public class PlayerCameraController : MonoBehaviour
 
     public void SetFieldOfView(float angle, float during)
     {
-        localCamera.fieldOfView = angle;
         Mathf.Lerp(localCamera.fieldOfView, angle, Time.deltaTime / during);
     }
 

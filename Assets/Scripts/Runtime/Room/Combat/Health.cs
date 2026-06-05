@@ -11,7 +11,8 @@ public class Health : MonoBehaviour, IDamageable
     public float Max => maxHealth;
     public bool IsDead => _current <= 0f;
 
-    public event Action<float, float> OnHealthChanged;  // current, max
+    public delegate void OnHealthChangedHandler(float currentHealth, float maxHealth); 
+    public event OnHealthChangedHandler OnHealthChanged;
     public event Action OnDied;
 
     private void Awake()

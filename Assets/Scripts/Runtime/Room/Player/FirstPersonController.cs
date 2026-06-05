@@ -68,6 +68,8 @@ public class FirstPersonController : MonoBehaviour//NetworkBehaviour
     private bool _isSprinting;
     private bool _isAiming;
 
+    private bool IsActionBlocked => _isSprinting || weaponInventory.IsSwitching;
+
     public event Action OnJump;
     public Vector2 MoveInput => _moveInput;
     public bool IsGrounded => _cc.isGrounded;
@@ -218,7 +220,11 @@ public class FirstPersonController : MonoBehaviour//NetworkBehaviour
         if (_cc.isGrounded && _verticalVelocity < 0f)
             _verticalVelocity = -2f;
 
+        bool wasSprinting = _isSprinting;
         _isSprinting = !IsCrouching && _sprintAction.IsPressed();
+
+        if (_isSprinting && !wasSprinting && _equippedWeapon.IsReloading)
+            _equippedWeapon.CancelReload();
         float speed = IsCrouching ? crouchSpeed : (_isSprinting ? runSpeed : walkSpeed);
 
         if (_cc.isGrounded)
@@ -251,21 +257,22 @@ public class FirstPersonController : MonoBehaviour//NetworkBehaviour
 
     private void HandleAimming()
     {
-        _isAiming = _aimAction.IsPressed();
+        _isAiming = _aimAction.IsPressed() && !IsActionBlocked && !_equippedWeapon.IsReloading;
         var targetAngle = _isAiming ? aimmingViewAngle : normalViewAngle;
-        
+
         cameraHolder.SetFieldOfView(targetAngle, angleSwitchingTime);
     }
 
     private void HandleReload()
     {
+        if (IsActionBlocked) return;
         if (_reloadAction.WasPressedThisFrame())
             _equippedWeapon.Reload();
     }
 
     private void HandleAttack()
     {
-        if (_equippedWeapon == null) return;
+        if (_equippedWeapon == null || IsActionBlocked) return;
 
         bool justPressed = _attackAction.WasPressedThisFrame();
         bool shouldFire = _equippedWeapon.IsAutomatic ? _attackAction.IsPressed() : justPressed;

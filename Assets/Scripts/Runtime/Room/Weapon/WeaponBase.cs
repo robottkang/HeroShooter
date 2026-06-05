@@ -1,9 +1,15 @@
 using Cysharp.Threading.Tasks;
+using System;
 using System.Threading;
 using UnityEngine;
 
 public abstract class WeaponBase : MonoBehaviour
 {
+    [Header("Info")]
+    [SerializeField] private Sprite bodySprite;
+    [SerializeField] private Sprite magazineSprite;
+    [SerializeField] private Sprite scopeSprite;
+
     [Header("Stats")]
     [SerializeField] protected float damage;
     [SerializeField] protected int magazineSize;
@@ -18,6 +24,7 @@ public abstract class WeaponBase : MonoBehaviour
     [SerializeField] protected Transform casingEjectPoint;
     [SerializeField] protected ParticleSystem muzzleFlashVFX;
     [SerializeField] protected GameObject casingPrefab;
+    [SerializeField] protected RuntimeAnimatorController controller;
 
     [Header("Audio")]
     [SerializeField] protected AudioClip fireClip;
@@ -33,10 +40,19 @@ public abstract class WeaponBase : MonoBehaviour
     protected float _lastFireTime;
     private CancellationTokenSource _reloadCts;
 
+    public Sprite BodySprite => bodySprite;
+    public Sprite MagazineSprite => magazineSprite;
+    public Sprite ScopeSprite => scopeSprite;
     public int CurrentAmmo => _currentAmmo;
     public int ReserveAmmo => reserveAmmo;
     public bool IsReloading => _isReloading;
     public bool IsAutomatic => isAutomatic;
+    public RuntimeAnimatorController Controller => controller;
+
+    public delegate void OnAmmoChangedHandler(int currentAmmo, int reserveAmmo);
+    public event OnAmmoChangedHandler OnAmmoChanged;
+    public event Action OnFired;
+    public event Action OnReloadStarted;
 
     protected virtual void Awake()
     {
@@ -63,14 +79,14 @@ public abstract class WeaponBase : MonoBehaviour
 
         _currentAmmo--;
         _lastFireTime = Time.time;
+        OnAmmoChanged?.Invoke(_currentAmmo, reserveAmmo);
 
-        if (muzzleFlashVFX != null)
-            muzzleFlashVFX.Play();
+        PlayMuzzleFlash(0.05f).Forget();
 
         _audioSource.PlayOneShot(fireClip);
         EjectCasing();
-        if (_animator != null)
-            _animator.Play("Fire", 0, 0f);
+        _animator.Play("Fire", 0, 0f);
+        OnFired?.Invoke();
 
         if (Physics.Raycast(_playerCamera.transform.position, _playerCamera.transform.forward, out RaycastHit hit, range, hitMask))
         {
@@ -117,6 +133,7 @@ public abstract class WeaponBase : MonoBehaviour
         _reloadCts = new CancellationTokenSource();
 
         _animator.Play("Reload", 0, 0f);
+        OnReloadStarted?.Invoke();
         if (_currentAmmo != 0)
             _audioSource.PlayOneShot(reloadClip);
         else
@@ -126,7 +143,7 @@ public abstract class WeaponBase : MonoBehaviour
         {
             await UniTask.WaitForSeconds(reloadTime, cancellationToken: _reloadCts.Token);
         }
-        catch (System.OperationCanceledException)
+        catch (OperationCanceledException)
         {
             return;
         }
@@ -135,7 +152,15 @@ public abstract class WeaponBase : MonoBehaviour
         _currentAmmo += take;
         reserveAmmo -= take;
         _isReloading = false;
+        OnAmmoChanged?.Invoke(_currentAmmo, reserveAmmo);
         _reloadCts?.Dispose();
         _reloadCts = null;
+    }
+
+    private async UniTask PlayMuzzleFlash(float delay)
+    {
+        muzzleFlashVFX.Play();
+        await UniTask.WaitForSeconds(delay);
+        muzzleFlashVFX.Stop();
     }
 }
