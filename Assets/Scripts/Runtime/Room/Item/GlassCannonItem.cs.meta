@@ -1,0 +1,12 @@
+fileFormatVersion: 2
+guid: 93e86055755b003438adc36b1414adc9
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences:
+  - glassCannonPrefab: {fileID: 238728904510199731, guid: e9a0d137adc6f4840bf9c052ca765c4d, type: 3}
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

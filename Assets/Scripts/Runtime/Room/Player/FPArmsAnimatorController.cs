@@ -1,9 +1,9 @@
 using System;
 using UnityEngine;
 
-public class FPArmsAnimatorController : MonoBehaviour
+public class FPArmsAnimatorController : MonoBehaviour, IEventListener<WeaponChangedEvent>
 {
-    [SerializeField] private FirstPersonController fpc;
+    [SerializeField] private PlayerController playerController;
     [SerializeField] private WeaponInventory weaponInventory;
 
     public const int LayerPoses = 0;
@@ -25,14 +25,22 @@ public class FPArmsAnimatorController : MonoBehaviour
     private static readonly int AlphaIKHandRightId = Animator.StringToHash("Alpha IK Hand Right");
 
     public event Action OnHolsterEnded;
-    public event Action OnUnholsterEnded;
     public event Action OnReloadEnded;
-    public event Action OnFireEnded;
     public event Action OnAmmunitionFilled;
     public event Action OnCasingEjected;
 
     private Animator _anim;
     private WeaponBase _currentWeapon;
+
+    private void OnEnable()
+    {
+        EventBus<WeaponChangedEvent>.Register(this);
+    }
+
+    private void OnDisable()
+    {
+        EventBus<WeaponChangedEvent>.Unregister(this);
+    }
 
     private void Awake()
     {
@@ -41,22 +49,20 @@ public class FPArmsAnimatorController : MonoBehaviour
 
     private void Start()
     {
-        weaponInventory.OnWeaponChanged += ChangeAnimatorController;
         ChangeAnimatorController(weaponInventory.CurrentWeapon);
     }
 
     private void OnDestroy()
     {
-        weaponInventory.OnWeaponChanged -= ChangeAnimatorController;
         UnsubscribeWeapon(_currentWeapon);
     }
 
     private void Update()
     {
-        bool aiming = fpc.IsAiming;
-        Vector2 move = fpc.MoveInput;
+        bool aiming = playerController.IsAiming;
+        Vector2 move = playerController.MoveInput;
 
-        _anim.SetBool(RunningId, fpc.IsSprinting);
+        _anim.SetBool(RunningId, playerController.IsSprinting && playerController.MoveInput.sqrMagnitude > 0.01f);
         _anim.SetBool(AimId, aiming);
         _anim.SetFloat(MovementId, move.magnitude, 0.1f, Time.deltaTime);
         _anim.SetFloat(AimingId, aiming ? 1f : 0f, 0.15f, Time.deltaTime);
@@ -78,6 +84,11 @@ public class FPArmsAnimatorController : MonoBehaviour
         weapon.OnReloadStarted -= PlayReloadAnimation;
     }
 
+    public void OnEvent(WeaponChangedEvent e)
+    {
+        ChangeAnimatorController(e.Weapon);
+    }
+
     private void PlayFireAnimation() => _anim.Play("Fire",   LayerOverlay, 0f);
     private void PlayReloadAnimation() => _anim.Play("Reload", LayerActions, 0f);
 
@@ -90,9 +101,7 @@ public class FPArmsAnimatorController : MonoBehaviour
 
     // AnimationEvent receivers
     private void OnAnimationEndedHolster() => OnHolsterEnded?.Invoke();
-    private void OnAnimationEndedUnholster() => OnUnholsterEnded?.Invoke();
     private void OnAnimationEndedReload() => OnReloadEnded?.Invoke();
-    private void OnAnimationEndedFire() => OnFireEnded?.Invoke();
     private void OnAmmunitionFill() => OnAmmunitionFilled?.Invoke();
     private void OnEjectCasing() => OnCasingEjected?.Invoke();
 }

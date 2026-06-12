@@ -5,37 +5,59 @@ using UnityEngine;
 public class Health : MonoBehaviour, IDamageable
 {
     [SerializeField] private float maxHealth = 100f;
-    [SerializeField, ReadOnly] private float current;
+    [SerializeField, ReadOnly] private float currentHealth;
+    [SerializeField, ReadOnly] private float extraHealth;
 
-    public float Current => current;
+    public float Current => currentHealth;
     public float Max => maxHealth;
-    public bool IsDead => current <= 0f;
+    public float Extra => extraHealth;
+    public float Total => maxHealth + extraHealth;
+    public bool IsDead => currentHealth <= 0f;
 
-    public delegate void OnHealthChangedHandler(float currentHealth, float maxHealth); 
-    public event OnHealthChangedHandler OnHealthChanged;
-    public event Action OnDied;
-
-    private void Awake()
+    private void Start()
     {
-        current = maxHealth;
+        Init();
     }
 
     public void TakeDamage(float amount)
     {
         if (IsDead) return;
 
-        current = Mathf.Max(0f, current - amount);
-        OnHealthChanged?.Invoke(current, maxHealth);
+        float extraDamage = Mathf.Min(amount, extraHealth);
+        extraHealth -= extraDamage;
+        float remaining = amount - extraDamage;
+        currentHealth = Mathf.Max(0f, currentHealth - remaining);
+        OnHealthChanged();
 
-        if (current == 0f)
-            OnDied?.Invoke();
+        if (currentHealth == 0f)
+            EventBus<PlayerDiedEvent>.Raise(new PlayerDiedEvent());
     }
 
     public void Heal(float amount)
     {
         if (IsDead) return;
 
-        current = Mathf.Min(maxHealth, current + amount);
-        OnHealthChanged?.Invoke(current, maxHealth);
+        currentHealth = Mathf.Min(maxHealth, currentHealth + amount);
+        OnHealthChanged();
+    }
+
+    public void SetExtraHealth(float amount)
+    {
+        extraHealth = amount;
+
+        OnHealthChanged();
+    }
+
+    private void OnHealthChanged()
+    {
+        EventBus<HealthChangedEvent>.Raise(new HealthChangedEvent(this, currentHealth, extraHealth, maxHealth));
+    }
+
+    public void Init()
+    {
+        currentHealth = maxHealth;
+        extraHealth = 0f;
+
+        OnHealthChanged();
     }
 }

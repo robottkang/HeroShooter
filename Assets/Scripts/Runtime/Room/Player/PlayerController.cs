@@ -3,7 +3,7 @@ using UnityEngine.InputSystem;
 using System;
 using Fusion;
 
-public class FirstPersonController : MonoBehaviour//NetworkBehaviour
+public class PlayerController : MonoBehaviour/*NetworkBehaviour*/
 {
     [Header("Input")]
     [SerializeField] private InputActionAsset actionAsset;
@@ -32,6 +32,9 @@ public class FirstPersonController : MonoBehaviour//NetworkBehaviour
     [Header("Weapon")]
     [SerializeField] private WeaponInventory weaponInventory;
 
+    [Header("Ability")]
+    [SerializeField] private AbilityBase ability;
+
     [Header("Look")]
     [SerializeField] private Vector2 mouseSensitivity = new Vector2(1f, 1f);
     [SerializeField] private float maxPitchAngle = 80f;
@@ -44,18 +47,8 @@ public class FirstPersonController : MonoBehaviour//NetworkBehaviour
 
     private CharacterController _cc;
 
-    private InputAction _moveAction, _lookAction, _jumpAction, _sprintAction, _crouchAction, _reloadAction, _aimAction, _attackAction;
+    private InputAction _moveAction, _lookAction, _jumpAction, _sprintAction, _crouchAction, _reloadAction, _aimAction, _attackAction, _acquireAction, _abilityAction;
 
-    private WeaponBase _equippedWeapon;
-
-    private void Start()
-    {
-        if (weaponInventory != null)
-        {
-            _equippedWeapon = weaponInventory.CurrentWeapon;
-            weaponInventory.OnWeaponChanged += weapon => _equippedWeapon = weapon;
-        }
-    }
     private Vector2 _moveInput;
     private Vector2 _lookInput;
     private float _verticalVelocity;
@@ -65,16 +58,23 @@ public class FirstPersonController : MonoBehaviour//NetworkBehaviour
     private bool _isSprinting;
     private bool _isAiming;
 
-    private bool IsActionBlocked => _isSprinting || weaponInventory.IsSwitching;
+    private bool IsActionBlocked => _isSprinting || weaponInventory.IsSwitching || IsAbilityActive;
+    private WeaponBase EquippedWeapon => weaponInventory.CurrentWeapon;
 
     public event Action<bool> OnAimingChanged;
     public event Action OnJump;
+    public CharacterController CC => _cc;
     public Vector2 MoveInput => _moveInput;
     public bool IsGrounded => _cc.isGrounded;
     public bool IsSprinting => _isSprinting;
+    public bool IsAcquiring => _acquireAction.IsPressed();
     public bool IsAiming => _isAiming;
     public float WalkSpeed => walkSpeed;
     public float RunSpeed => runSpeed;
+    public bool IsAbilityOverriding { get; set; }
+    public bool IsAbilityActive { get; set; }
+    public float VerticalVelocity { get => _verticalVelocity; set => _verticalVelocity = value; }
+    public float GravityMultiplier { get; set; } = 1f;
 
     private void Awake()
     {
@@ -92,6 +92,8 @@ public class FirstPersonController : MonoBehaviour//NetworkBehaviour
         _reloadAction = playerMap.FindAction("Reload", true);
         _attackAction = playerMap.FindAction("Attack", true);
         _aimAction = playerMap.FindAction("Aim", true);
+        _acquireAction = playerMap.FindAction("Acquire", true);
+        _abilityAction = playerMap.FindAction("Ability", true);
 
         _moveAction.Enable();
         _lookAction.Enable();
@@ -101,6 +103,8 @@ public class FirstPersonController : MonoBehaviour//NetworkBehaviour
         _reloadAction.Enable();
         _attackAction.Enable();
         _aimAction.Enable();
+        _acquireAction.Enable();
+        _abilityAction.Enable();
     }
 
     private void Update()
@@ -116,6 +120,7 @@ public class FirstPersonController : MonoBehaviour//NetworkBehaviour
         HandleReload();
         HandleAiming();
         HandleAttack();
+        HandleAbility();
     }
 
     /*
@@ -198,7 +203,7 @@ public class FirstPersonController : MonoBehaviour//NetworkBehaviour
     {
         _jumpBufferTimer -= Time.deltaTime;
 
-        if (_jumpAction.WasPressedThisFrame() && !IsCrouching)
+        if (_jumpAction.WasPressedThisFrame() && !IsCrouching && !IsAbilityActive)
         {
             _jumpBufferTimer = jumpBufferTime;
         }
@@ -215,14 +220,12 @@ public class FirstPersonController : MonoBehaviour//NetworkBehaviour
 
     private void HandleMovement()
     {
+        if (IsAbilityOverriding) return;
+
         if (_cc.isGrounded && _verticalVelocity < 0f)
             _verticalVelocity = -2f;
 
-        bool wasSprinting = _isSprinting;
-        _isSprinting = !IsCrouching && _sprintAction.IsPressed();
-
-        if (_isSprinting && !wasSprinting && _equippedWeapon.IsReloading)
-            _equippedWeapon.CancelReload();
+        _isSprinting = !IsCrouching && !EquippedWeapon.IsReloading && !IsAbilityActive && _sprintAction.IsPressed();
         float speed = IsCrouching ? crouchSpeed : (_isSprinting ? runSpeed : walkSpeed);
 
         if (_cc.isGrounded)
@@ -234,7 +237,7 @@ public class FirstPersonController : MonoBehaviour//NetworkBehaviour
         Vector3 move = transform.right * _moveInput.x + transform.forward * _moveInput.y;
         move *= _cc.isGrounded ? speed : _airSpeed;
 
-        _verticalVelocity += gravity * Time.deltaTime;
+        _verticalVelocity += gravity * GravityMultiplier * Time.deltaTime;
         move.y = _verticalVelocity;
 
         _cc.Move(move * Time.deltaTime);
@@ -255,7 +258,7 @@ public class FirstPersonController : MonoBehaviour//NetworkBehaviour
 
     private void HandleAiming()
     {
-        bool next = _aimAction.IsPressed() && !IsActionBlocked && !_equippedWeapon.IsReloading;
+        bool next = _aimAction.IsPressed() && !IsActionBlocked && !EquippedWeapon.IsReloading;
 
         if (next != _isAiming)
         {
@@ -269,18 +272,25 @@ public class FirstPersonController : MonoBehaviour//NetworkBehaviour
     {
         if (IsActionBlocked) return;
         if (_reloadAction.WasPressedThisFrame())
-            _equippedWeapon.Reload();
+            EquippedWeapon.Reload();
     }
 
     private void HandleAttack()
     {
-        if (_equippedWeapon == null || IsActionBlocked) return;
+        if (EquippedWeapon == null || IsActionBlocked) return;
 
         bool justPressed = _attackAction.WasPressedThisFrame();
-        bool shouldFire = _equippedWeapon.IsAutomatic ? _attackAction.IsPressed() : justPressed;
+        bool shouldFire = EquippedWeapon.IsAutomatic ? _attackAction.IsPressed() : justPressed;
 
         if (shouldFire)
-            _equippedWeapon.Fire(justPressed);
+            EquippedWeapon.Fire(justPressed);
+    }
+
+    private void HandleAbility()
+    {
+        if (ability == null) return;
+        if (_abilityAction.WasPressedThisFrame())
+            ability.TryUse(this);
     }
 
     private bool CanStandUp()

@@ -49,8 +49,6 @@ public abstract class WeaponBase : MonoBehaviour
     public bool IsAutomatic => isAutomatic;
     public RuntimeAnimatorController Controller => controller;
 
-    public delegate void OnAmmoChangedHandler(int currentAmmo, int reserveAmmo);
-    public event OnAmmoChangedHandler OnAmmoChanged;
     public event Action OnFired;
     public event Action OnReloadStarted;
 
@@ -79,9 +77,9 @@ public abstract class WeaponBase : MonoBehaviour
 
         _currentAmmo--;
         _lastFireTime = Time.time;
-        OnAmmoChanged?.Invoke(_currentAmmo, reserveAmmo);
+        EventBus<AmmoChangedEvent>.Raise(new AmmoChangedEvent(_currentAmmo, reserveAmmo));
 
-        PlayMuzzleFlash(0.05f).Forget();
+        PlayMuzzleFlashAsync(0.05f).Forget();
 
         _audioSource.PlayOneShot(fireClip);
         EjectCasing();
@@ -101,7 +99,7 @@ public abstract class WeaponBase : MonoBehaviour
         if (_currentAmmo == magazineSize) return;
         if (reserveAmmo <= 0) return;
 
-        ReloadTask().Forget();
+        ReloadAsync().Forget();
     }
 
     public virtual void CancelReload()
@@ -127,7 +125,7 @@ public abstract class WeaponBase : MonoBehaviour
             Instantiate(casingPrefab, casingEjectPoint.position, casingEjectPoint.rotation);
     }
 
-    private async UniTask ReloadTask()
+    private async UniTask ReloadAsync()
     {
         _isReloading = true;
         _reloadCts = new CancellationTokenSource();
@@ -152,12 +150,13 @@ public abstract class WeaponBase : MonoBehaviour
         _currentAmmo += take;
         reserveAmmo -= take;
         _isReloading = false;
-        OnAmmoChanged?.Invoke(_currentAmmo, reserveAmmo);
+        EventBus<AmmoChangedEvent>.Raise(new AmmoChangedEvent(_currentAmmo, reserveAmmo));
+
         _reloadCts?.Dispose();
         _reloadCts = null;
     }
 
-    private async UniTask PlayMuzzleFlash(float delay)
+    private async UniTask PlayMuzzleFlashAsync(float delay)
     {
         muzzleFlashVFX.Play();
         await UniTask.WaitForSeconds(delay);
@@ -166,6 +165,7 @@ public abstract class WeaponBase : MonoBehaviour
 
     private void OnDrawGizmos()
     {
+        if (!Application.isPlaying && _playerCamera == null) return;
         Gizmos.color = Color.red;
         Gizmos.DrawLine(_playerCamera.transform.position, _playerCamera.transform.position + _playerCamera.transform.forward * range);
     }

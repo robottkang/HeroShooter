@@ -39,27 +39,27 @@ public class Casing : MonoBehaviour
 			Random.Range (minimumZForce, maximumZForce));
 	}
 
-	private void Start() 
+	private void Start()
 	{
-		RemoveCasing().Forget();
+		RemoveCasingAsync().Forget();
 		transform.rotation = Random.rotation;
-		PlaySound().Forget();
+		PlaySoundAsync().Forget();
 	}
 
-	private void FixedUpdate() 
+	private void FixedUpdate()
 	{
 		transform.Rotate(Vector3.right, speed * Time.deltaTime);
 		transform.Rotate(Vector3.down, speed * Time.deltaTime);
 	}
 
-	private async UniTask PlaySound() 
+	private async UniTaskVoid PlaySoundAsync()
 	{
 		await UniTask.WaitForSeconds(Random.Range(0.25f, 0.85f));
 		audioSource.clip = casingSounds[Random.Range(0, casingSounds.Length)];
 		audioSource.Play();
 	}
 
-	private async UniTask RemoveCasing() 
+	private async UniTaskVoid RemoveCasingAsync()
 	{
 		await UniTask.WaitForSeconds(despawnTime);
 		Destroy(gameObject);

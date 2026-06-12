@@ -20,7 +20,6 @@ public class WeaponInventory : MonoBehaviour
     public IReadOnlyList<WeaponBase> Weapons => _weapons;
     public int CurrentIndex => _currentIndex;
     public bool IsSwitching => _isSwitching;
-    public event Action<WeaponBase> OnWeaponChanged;
 
     private void Awake()
     {
@@ -48,6 +47,7 @@ public class WeaponInventory : MonoBehaviour
     {
         if (_weapons.Contains(weapon)) return;
         weapon.transform.SetParent(transform);
+        weapon.transform.SetLocalPositionAndRotation(weapon.transform.position, weapon.transform.rotation);
         weapon.SetCamera(playerCamera);
         weapon.gameObject.SetActive(false);
         _weapons.Add(weapon);
@@ -65,7 +65,7 @@ public class WeaponInventory : MonoBehaviour
         if (_weapons.Count == 0)
         {
             _currentIndex = -1;
-            OnWeaponChanged?.Invoke(null);
+            EventBus<WeaponChangedEvent>.Raise(new WeaponChangedEvent(null));
             return;
         }
 
@@ -89,22 +89,23 @@ public class WeaponInventory : MonoBehaviour
         _isSwitching = true;
 
         bool holsterDone = false;
-        void OnDone() => holsterDone = true;
-        armsAnimator.OnHolsterEnded += OnDone;
+        void OnHolsterDone() => holsterDone = true;
+        armsAnimator.OnHolsterEnded += OnHolsterDone;
         armsAnimator.SetHolstered(true);
 
         try
         {
             await UniTask.WaitUntil(() => holsterDone, cancellationToken: token);
         }
-        catch (OperationCanceledException)
+        catch (OperationCanceledException e)
         {
-            armsAnimator.OnHolsterEnded -= OnDone;
+            Debug.Log(e);
+            armsAnimator.OnHolsterEnded -= OnHolsterDone;
             _isSwitching = false;
             return;
         }
 
-        armsAnimator.OnHolsterEnded -= OnDone;
+        armsAnimator.OnHolsterEnded -= OnHolsterDone;
         EquipInternal(index);
         armsAnimator.SetHolstered(false);
         _isSwitching = false;
@@ -120,7 +121,7 @@ public class WeaponInventory : MonoBehaviour
 
         _currentIndex = index;
         _weapons[_currentIndex].gameObject.SetActive(true);
-        OnWeaponChanged?.Invoke(CurrentWeapon);
+        EventBus<WeaponChangedEvent>.Raise(new WeaponChangedEvent(CurrentWeapon));
     }
 
     private void HandleScrollSwitch()

@@ -678,7 +678,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bbe1ceb6995e4db43a6ddfa569b2f49d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::FPArmsAnimatorController
-  fpc: {fileID: 5799965577927399923}
+  playerController: {fileID: 5799965577927399923}
   weaponInventory: {fileID: 6294705494504188549}
 --- !u!1 &2413713690696248497
 GameObject:
@@ -2487,6 +2487,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::PlayerCameraController
   remoteCamera: {fileID: 2306788055855855576}
   localCamera: {fileID: 348023218987784508}
+  normalViewAngle: 60
+  aimmingViewAngle: 45
+  angleSwitchingDuration: 0.3
 --- !u!1 &5948214685914567927
 GameObject:
   m_ObjectHideFlags: 0
@@ -2716,9 +2719,6 @@ MonoBehaviour:
   weaponInventory: {fileID: 6294705494504188549}
   mouseSensitivity: {x: 0.3, y: 0.3}
   maxPitchAngle: 80
-  normalViewAngle: 60
-  aimmingViewAngle: 45
-  angleSwitchingTime: 1
   cameraHolder: {fileID: 2177891503593820559}
 --- !u!114 &8907916417740226833
 MonoBehaviour:
@@ -2733,7 +2733,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Health
   maxHealth: 100
-  current: 0
+  currentHealth: 0
+  extraHealth: 0
 --- !u!114 &3825796302250068311
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3187,6 +3188,14 @@ PrefabInstance:
       propertyPath: m_Layer
       value: 7
       objectReference: {fileID: 0}
+    - target: {fileID: 124902065087601079, guid: 8430ac8947516734fbbc65df12a1a2c1, type: 3}
+      propertyPath: m_Materials.Array.size
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 124902065087601079, guid: 8430ac8947516734fbbc65df12a1a2c1, type: 3}
+      propertyPath: 'm_Materials.Array.data[1]'
+      value: 
+      objectReference: {fileID: 2100000, guid: 73f6d9fcbf92fc04892be23ea5d5337a, type: 2}
     - target: {fileID: 414117464747255840, guid: 8430ac8947516734fbbc65df12a1a2c1, type: 3}
       propertyPath: m_Layer
       value: 7
@@ -3337,6 +3346,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 8430ac8947516734fbbc65df12a1a2c1, type: 3}
       insertIndex: -1
       addedObject: {fileID: 278669042080570768}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 8430ac8947516734fbbc65df12a1a2c1, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 5475933301260724130}
   m_SourcePrefab: {fileID: 100100000, guid: 8430ac8947516734fbbc65df12a1a2c1, type: 3}
 --- !u!1 &8149378824270968675 stripped
 GameObject:
@@ -3377,7 +3389,19 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ae050bb25488cd049acca76e2c5f616a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerAnimatorController
-  fpc: {fileID: 5799965577927399923}
+  playerController: {fileID: 5799965577927399923}
+--- !u!114 &5475933301260724130
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8149378824270968675}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d66b6a65c2d22e64c90a419bd7019336, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::EnemyHighlighter
 --- !u!4 &8814591693621997017 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: 8430ac8947516734fbbc65df12a1a2c1, type: 3}

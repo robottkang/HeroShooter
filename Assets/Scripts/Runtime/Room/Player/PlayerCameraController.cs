@@ -25,7 +25,7 @@ public class PlayerCameraController : MonoBehaviour
         {
             elapsed += Time.deltaTime;
             localCamera.fieldOfView = Mathf.Lerp(start, targetAngle, elapsed / angleSwitchingDuration);
-            await UniTask.Yield();
+            await UniTask.Yield(cancellationToken: destroyCancellationToken);
         }
 
         localCamera.fieldOfView = targetAngle;

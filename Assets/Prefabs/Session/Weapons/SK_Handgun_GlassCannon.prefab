@@ -184,11 +184,11 @@ SkinnedMeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: f47e38b127e66d7449229b1fa2640281, type: 2}
-  - {fileID: 2100000, guid: 89aec69d264f8854a9b5b74042a882ca, type: 2}
-  - {fileID: 2100000, guid: 5facf1a0fb716d0438654d34f908b5dc, type: 2}
-  - {fileID: 2100000, guid: 600f7c3032895ad489d4119a732fc463, type: 2}
-  - {fileID: 2100000, guid: 600f7c3032895ad489d4119a732fc463, type: 2}
+  - {fileID: 2100000, guid: e5b59766fe9119f4697700d59fb50c00, type: 2}
+  - {fileID: 2100000, guid: e5b59766fe9119f4697700d59fb50c00, type: 2}
+  - {fileID: 2100000, guid: e5b59766fe9119f4697700d59fb50c00, type: 2}
+  - {fileID: 2100000, guid: e5b59766fe9119f4697700d59fb50c00, type: 2}
+  - {fileID: 2100000, guid: e5b59766fe9119f4697700d59fb50c00, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -310,7 +310,7 @@ GameObject:
   - component: {fileID: 238728904510199731}
   - component: {fileID: 1980951809084380156}
   m_Layer: 0
-  m_Name: SK_Handgun
+  m_Name: SK_Handgun_GlassCannon
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -370,9 +370,9 @@ MonoBehaviour:
   bodySprite: {fileID: 21300000, guid: 5de2ff934a8b3ea4ebfe923a6f958686, type: 3}
   magazineSprite: {fileID: 21300000, guid: d96558cda50c04347b69780fd84c6fc9, type: 3}
   scopeSprite: {fileID: 21300000, guid: 8dfba53139ea13f40b1977728ed0bea4, type: 3}
-  damage: 20
-  magazineSize: 7
-  reserveAmmo: 28
+  damage: 99999
+  magazineSize: 1
+  reserveAmmo: 0
   roundsPerMinute: 300
   range: 80
   reloadTime: 1.5
@@ -867,6 +867,14 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: -7511558181221131132, guid: 8931d8712849cae45b5d761cd9ec7838, type: 3}
+      propertyPath: 'm_Materials.Array.data[0]'
+      value: 
+      objectReference: {fileID: 2100000, guid: e5b59766fe9119f4697700d59fb50c00, type: 2}
+    - target: {fileID: -7511558181221131132, guid: 8931d8712849cae45b5d761cd9ec7838, type: 3}
+      propertyPath: 'm_Materials.Array.data[1]'
+      value: 
+      objectReference: {fileID: 2100000, guid: e5b59766fe9119f4697700d59fb50c00, type: 2}
     - target: {fileID: 919132149155446097, guid: 8931d8712849cae45b5d761cd9ec7838, type: 3}
       propertyPath: m_Name
       value: SM_Handgun_03_Magazine_Default
@@ -929,6 +937,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: -7511558181221131132, guid: 446803998811ff04ea871c8f2a4be03c, type: 3}
+      propertyPath: 'm_Materials.Array.data[0]'
+      value: 
+      objectReference: {fileID: 2100000, guid: e5b59766fe9119f4697700d59fb50c00, type: 2}
     - target: {fileID: 919132149155446097, guid: 446803998811ff04ea871c8f2a4be03c, type: 3}
       propertyPath: m_Name
       value: SM_Handgun_03_Scope_Default

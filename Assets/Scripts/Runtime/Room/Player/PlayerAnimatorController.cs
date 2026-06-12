@@ -3,7 +3,7 @@ using UnityEngine;
 public class PlayerAnimatorController : MonoBehaviour
 {
     [Header("References")]
-    [SerializeField] private FirstPersonController fpc;
+    [SerializeField] private PlayerController playerController;
 
     private Animator _anim;
     private CharacterController _cc;
@@ -18,26 +18,26 @@ public class PlayerAnimatorController : MonoBehaviour
     private void Awake()
     {
         _anim = GetComponent<Animator>();
-        _cc = fpc.GetComponent<CharacterController>();
-        fpc.OnJump += TriggerJump;
+        _cc = playerController.GetComponent<CharacterController>();
+        playerController.OnJump += TriggerJump;
     }
 
     private void OnDestroy()
     {
-        if (fpc != null) fpc.OnJump -= TriggerJump;
+        if (playerController != null) playerController.OnJump -= TriggerJump;
     }
 
     private void Update()
     {
         Vector3 worldVel = _cc.velocity;
         worldVel.y = 0f;
-        Vector3 localVel = fpc.transform.InverseTransformDirection(worldVel);
+        Vector3 localVel = playerController.transform.InverseTransformDirection(worldVel);
 
         _anim.SetFloat(VelocityXId, localVel.x, 0.1f, Time.deltaTime);
         _anim.SetFloat(VelocityYId, localVel.z, 0.1f, Time.deltaTime);
-        _anim.SetBool(IsCrouchingId, fpc.IsCrouching);
+        _anim.SetBool(IsCrouchingId, playerController.IsCrouching);
 
-        _anim.SetBool(IsGroundedId, fpc.IsGrounded);
+        _anim.SetBool(IsGroundedId, playerController.IsGrounded);
     }
 
     private void TriggerJump() => _anim.SetTrigger(JumpTriggerId);

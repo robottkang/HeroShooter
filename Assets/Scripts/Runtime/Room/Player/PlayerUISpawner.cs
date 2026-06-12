@@ -13,10 +13,8 @@ public class PlayerUISpawner : MonoBehaviour
 
     private void Start()
     {
-        var fpc = GetComponent<FirstPersonController>();
-        var weaponInventory = GetComponentInChildren<WeaponInventory>();
-        var health = GetComponent<Health>();
+        var playerController = GetComponent<PlayerController>();
 
-        hudInstance.Init(fpc, weaponInventory, health);
+        hudInstance.Init(playerController);
     }
 }
