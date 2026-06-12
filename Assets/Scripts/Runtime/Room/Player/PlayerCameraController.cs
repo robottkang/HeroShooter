@@ -10,6 +10,9 @@ public class PlayerCameraController : MonoBehaviour
     [SerializeField] private float aimmingViewAngle = 45f;
     [SerializeField] private float angleSwitchingDuration = 0.3f;
 
+    public Camera RemoteCamera => remoteCamera;
+    public Camera LocalCamera => localCamera;
+
     private void Start()
     {
         ActiveLocalCamera();

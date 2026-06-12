@@ -1,10 +1,15 @@
+using Fusion;
+using System;
 using UnityEngine;
 using UnityEngine.InputSystem;
-using System;
-using Fusion;
+using UnityEngine.InputSystem.LowLevel;
 
 public class PlayerController : MonoBehaviour/*NetworkBehaviour*/
 {
+    private enum MoveState { Idle, Walk, Sprint, Crouch }
+    private enum WeaponState { Idle, Attack, Reload }
+    private enum ActionState { Idle, Aim, Switch, Acquire }
+
     [Header("Input")]
     [SerializeField] private InputActionAsset actionAsset;
 
@@ -47,6 +52,13 @@ public class PlayerController : MonoBehaviour/*NetworkBehaviour*/
 
     private CharacterController _cc;
 
+    private StateMachine _moveFSM;
+    private StateMachine _weaponFSM;
+    private StateMachine _actionFSM;
+    private MoveState _currentMoveState;
+    private WeaponState _currentWeaponState;
+    private ActionState _currentActionState;
+
     private InputAction _moveAction, _lookAction, _jumpAction, _sprintAction, _crouchAction, _reloadAction, _aimAction, _attackAction, _acquireAction, _abilityAction;
 
     private Vector2 _moveInput;
@@ -83,6 +95,10 @@ public class PlayerController : MonoBehaviour/*NetworkBehaviour*/
         _cc.height = standHeight;
         _cc.center = Vector3.up * (standHeight / 2f);
 
+        _moveFSM = new StateMachine(new MoveIdleState(this));
+        _weaponFSM = new StateMachine(new WeaponIdleState(this));
+        _actionFSM = new StateMachine(new ActionIdleState(this));
+
         var playerMap = actionAsset.FindActionMap("Player", true);
         _moveAction = playerMap.FindAction("Move", true);
         _lookAction = playerMap.FindAction("Look", true);
@@ -112,15 +128,26 @@ public class PlayerController : MonoBehaviour/*NetworkBehaviour*/
         _moveInput = _moveAction.ReadValue<Vector2>();
         _lookInput = _lookAction.ReadValue<Vector2>();
 
-        HandleCrouch();
-        HandleJumpBuffer();
         HandleLook();
+        HandleJumpBuffer();
+
+        HandleMoveFSM();
+        HandleWeaponFSM();
+        HandleActionFSM();
+
+        _moveFSM.UpdateState();
+        _weaponFSM.UpdateState();
+        _actionFSM.UpdateState();
+        /*
         HandleMovement();
+        HandleCrouch();
+
         HandleCrouchTransition();
         HandleReload();
         HandleAiming();
         HandleAttack();
         HandleAbility();
+        */
     }
 
     /*
@@ -190,6 +217,110 @@ public class PlayerController : MonoBehaviour/*NetworkBehaviour*/
             cameraHolder.transform.localRotation = camRot;
         }
     }*/
+
+    private void HandleMoveFSM()
+    {
+        if (_moveInput.sqrMagnitude < 0.01f) // when stop
+        {
+            ChangeMoveState(MoveState.Idle);
+            return;
+        }
+
+        if (_crouchAction.IsPressed()) // when press crouch
+        {
+            ChangeMoveState(MoveState.Crouch);
+            return;
+        }
+
+        if (_sprintAction.IsPressed()) // when press sprint
+        {
+            ChangeMoveState(MoveState.Sprint);
+            return;
+        }
+
+        ChangeMoveState(MoveState.Walk);
+    }
+
+    private void HandleWeaponFSM()
+    {
+        if (IsActionBlocked) return;
+
+        if (_reloadAction.WasPressedThisFrame())
+        {
+            ChangeWeaponState(WeaponState.Reload);
+            return;
+        }
+
+        bool justPressed = _attackAction.WasPressedThisFrame();
+        bool shouldFire = EquippedWeapon.IsAutomatic ? _attackAction.IsPressed() : justPressed;
+        if (shouldFire)
+        {
+            ChangeWeaponState(WeaponState.Attack);
+            return;
+        }
+
+        ChangeWeaponState(WeaponState.Idle);
+    }
+
+    private void HandleActionFSM()
+    {
+        ChangeActionState(ActionState.Idle);
+    }
+
+    private void ChangeMoveState(MoveState newState)
+    {
+        if (_currentMoveState == newState) return;
+
+        switch (newState)
+        {
+            case MoveState.Idle:
+                break;
+            case MoveState.Walk:
+                break;
+            case MoveState.Sprint:
+                break;
+            case MoveState.Crouch:
+                break;
+            default:
+                throw new NotImplementedException();
+        }
+    }
+
+    private void ChangeWeaponState(WeaponState newState)
+    {
+        if (_currentWeaponState == newState) return;
+
+        switch (newState)
+        {
+            case WeaponState.Idle:
+                break;
+            case WeaponState.Attack:
+                break;
+            case WeaponState.Reload:
+                break;
+            default:
+                throw new NotImplementedException();
+        }
+    }
+
+    private void ChangeActionState(ActionState newState)
+    {
+        if (_currentActionState == newState) return;
+
+        switch (newState)
+        {
+            case ActionState.Idle:
+                break;
+            case ActionState.Aim:
+                break;
+            case ActionState.Switch:
+                break;
+            case ActionState.Acquire:
+                break;
+            default:
+                throw new NotImplementedException();
+        }
+    }
 
     private void HandleCrouch()
     {
@@ -283,7 +414,7 @@ public class PlayerController : MonoBehaviour/*NetworkBehaviour*/
         bool shouldFire = EquippedWeapon.IsAutomatic ? _attackAction.IsPressed() : justPressed;
 
         if (shouldFire)
-            EquippedWeapon.Fire(justPressed);
+            EquippedWeapon.Fire(cameraHolder.LocalCamera, justPressed);
     }
 
     private void HandleAbility()

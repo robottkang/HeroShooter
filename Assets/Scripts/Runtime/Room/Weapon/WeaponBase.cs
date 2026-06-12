@@ -59,19 +59,15 @@ public abstract class WeaponBase : MonoBehaviour
         _currentAmmo = magazineSize;
     }
 
-    public void SetCamera(Camera cam)
-    {
-        _playerCamera = cam;
-    }
-
-    public virtual void Fire(bool justPressed = false)
+    public virtual void Fire(Camera targetCamera, bool justPressed = false)
     {
         if (_isReloading) return;
         if (Time.time - _lastFireTime < 60f / roundsPerMinute) return;
 
         if (_currentAmmo <= 0)
         {
-            if (justPressed) _audioSource.PlayOneShot(fireEmptyClip);
+            if (justPressed)
+                _audioSource.PlayOneShot(fireEmptyClip);
             return;
         }
 
@@ -86,7 +82,7 @@ public abstract class WeaponBase : MonoBehaviour
         _animator.Play("Fire", 0, 0f);
         OnFired?.Invoke();
 
-        if (Physics.Raycast(_playerCamera.transform.position, _playerCamera.transform.forward, out RaycastHit hit, range, hitMask))
+        if (Physics.Raycast(targetCamera.transform.position, targetCamera.transform.forward, out RaycastHit hit, range, hitMask))
         {
             if (hit.collider.TryGetComponent<IDamageable>(out var target))
                 target.TakeDamage(damage);

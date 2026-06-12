@@ -27,7 +27,6 @@ public class WeaponInventory : MonoBehaviour
         {
             if (child.TryGetComponent<WeaponBase>(out var weapon))
             {
-                weapon.SetCamera(playerCamera);
                 _weapons.Add(weapon);
                 child.gameObject.SetActive(false);
             }
@@ -48,7 +47,6 @@ public class WeaponInventory : MonoBehaviour
         if (_weapons.Contains(weapon)) return;
         weapon.transform.SetParent(transform);
         weapon.transform.SetLocalPositionAndRotation(weapon.transform.position, weapon.transform.rotation);
-        weapon.SetCamera(playerCamera);
         weapon.gameObject.SetActive(false);
         _weapons.Add(weapon);
     }
