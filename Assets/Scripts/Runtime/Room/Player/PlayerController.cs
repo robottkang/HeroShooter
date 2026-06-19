@@ -45,7 +45,7 @@ public class PlayerController : MonoBehaviour/*NetworkBehaviour*/, IItemInteract
 
     [Networked] private Vector3 NetworkedPosition { get; set; }
     [Networked] private Quaternion NetworkedRotation { get; set; }
-    [Networked] private float NetworkedCamPitch { get; set; }
+    [Networked] public float CamPitch { get; private set; }
     [Networked] public NetworkBool IsCrouching { get; private set; }
 
     private CharacterController _cc;
@@ -60,7 +60,6 @@ public class PlayerController : MonoBehaviour/*NetworkBehaviour*/, IItemInteract
     private Vector2 _moveInput;
     private Vector2 _lookInput;
     private float _verticalVelocity;
-    private float _xRotation;
     private float _jumpBufferTimer;
     private float _airSpeed = 5f;
     private bool _isSprinting;
@@ -197,7 +196,6 @@ public class PlayerController : MonoBehaviour/*NetworkBehaviour*/, IItemInteract
 
         NetworkedPosition = transform.position;
         NetworkedRotation = transform.rotation;
-        NetworkedCamPitch = _xRotation;
     }
 
     public override void Render()
@@ -211,7 +209,7 @@ public class PlayerController : MonoBehaviour/*NetworkBehaviour*/, IItemInteract
         if (cameraHolder != null)
         {
             var camRot = cameraHolder.transform.localRotation;
-            camRot = Quaternion.Lerp(camRot, Quaternion.Euler(NetworkedCamPitch, 0, 0), Time.deltaTime * 15f);
+            camRot = Quaternion.Lerp(camRot, Quaternion.Euler(CamPitch, 0, 0), Time.deltaTime * 15f);
             cameraHolder.transform.localRotation = camRot;
         }
     }*/
@@ -345,10 +343,10 @@ public class PlayerController : MonoBehaviour/*NetworkBehaviour*/, IItemInteract
 
     private void HandleLook()
     {
-        _xRotation -= _lookInput.y * mouseSensitivity.x;
-        _xRotation = Mathf.Clamp(_xRotation, -maxPitchAngle, maxPitchAngle);
+        CamPitch -= _lookInput.y * mouseSensitivity.x;
+        CamPitch = Mathf.Clamp(CamPitch, -maxPitchAngle, maxPitchAngle);
 
-        cameraHolder.transform.localRotation = Quaternion.Euler(_xRotation, 0f, 0f);
+        cameraHolder.transform.localRotation = Quaternion.Euler(CamPitch, 0f, 0f);
         transform.Rotate(_lookInput.x * mouseSensitivity.y * Vector3.up);
     }
 
