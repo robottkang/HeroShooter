@@ -2750,10 +2750,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SuperJumpAbility
   cooldown: 5
+  abilityActiveDuration: 0.2
   jumpVelocity: 15
   gravityMultiplier: 0.2
   hangDuration: 0.6
-  abilityActiveDuration: 0.2
 --- !u!114 &3825796302250068311
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3033,7 +3033,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 8430ac8947516734fbbc65df12a1a2c1, type: 3}
       propertyPath: m_LocalRotation.w
-      value: 1
+      value: 0.9659258
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 8430ac8947516734fbbc65df12a1a2c1, type: 3}
       propertyPath: m_LocalRotation.x
@@ -3041,7 +3041,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 8430ac8947516734fbbc65df12a1a2c1, type: 3}
       propertyPath: m_LocalRotation.y
-      value: 0
+      value: 0.2588191
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 8430ac8947516734fbbc65df12a1a2c1, type: 3}
       propertyPath: m_LocalRotation.z
@@ -3053,7 +3053,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 8430ac8947516734fbbc65df12a1a2c1, type: 3}
       propertyPath: m_LocalEulerAnglesHint.y
-      value: 0
+      value: 30
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 8430ac8947516734fbbc65df12a1a2c1, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
@@ -3409,6 +3409,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerAnimatorController
   playerController: {fileID: 5799965577927399923}
+  cameraHolder: {fileID: 2177891503593820559}
 --- !u!114 &5475933301260724130
 MonoBehaviour:
   m_ObjectHideFlags: 0

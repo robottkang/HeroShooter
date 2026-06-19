@@ -99,7 +99,6 @@ public class WeaponInventory : MonoBehaviour
         }
         catch (OperationCanceledException e)
         {
-            Debug.Log(e);
             armsAnimator.OnHolsterEnded -= OnHolsterDone;
             _isSwitching = false;
             return;

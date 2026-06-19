@@ -7,6 +7,7 @@ public enum AbilityBlockFlags { None = 0, Move = 1, Action = 2 }
 public abstract class AbilityBase : MonoBehaviour
 {
     [SerializeField] protected float cooldown = 5f;
+    [SerializeField] protected float abilityActiveDuration = 0.2f;
 
     protected float _cooldownTimer;
 
@@ -25,14 +26,15 @@ public abstract class AbilityBase : MonoBehaviour
     {
         if (!IsReady || IsActive) return false;
         _cooldownTimer = cooldown;
-        RunAbilityAsync(player).Forget();
+        UseAbilityAsync(player).Forget();
+        TrackActiveDurationAsync(player).Forget();
         return true;
     }
-
-    private async UniTaskVoid RunAbilityAsync(PlayerController player)
+    protected async UniTaskVoid TrackActiveDurationAsync(PlayerController player)
     {
         IsActive = true;
-        await UseAbilityAsync(player);
+        await UniTask.WaitForSeconds(abilityActiveDuration,
+            cancellationToken: player.destroyCancellationToken);
         IsActive = false;
     }
 

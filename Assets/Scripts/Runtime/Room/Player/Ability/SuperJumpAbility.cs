@@ -6,7 +6,6 @@ public class SuperJumpAbility : AbilityBase
     [SerializeField] private float jumpVelocity = 15f;
     [SerializeField] private float gravityMultiplier = 0.2f;
     [SerializeField] private float hangDuration = 0.6f;
-    [SerializeField] private float abilityActiveDuration = 0.2f;
 
     public override AbilityBlockFlags BlockFlags => AbilityBlockFlags.Action;
 

@@ -4,8 +4,6 @@ using UnityEngine;
 public class DashAbility : AbilityBase
 {
     [SerializeField] private float dashDistance = 8f;
-    [SerializeField] private float dashDuration = 0.2f;
-    [SerializeField] private float abilityActiveDuration = 0.2f;
 
     public override AbilityBlockFlags BlockFlags => AbilityBlockFlags.Move | AbilityBlockFlags.Action;
 
@@ -16,10 +14,10 @@ public class DashAbility : AbilityBase
             ? (player.transform.right * input.x + player.transform.forward * input.y).normalized
             : player.transform.forward;
 
-        float speed = dashDistance / dashDuration;
+        float speed = dashDistance / abilityActiveDuration;
         float elapsed = 0f;
 
-        while (elapsed < dashDuration)
+        while (elapsed < abilityActiveDuration)
         {
             player.CC.Move(dir * speed * Time.deltaTime);
             elapsed += Time.deltaTime;
