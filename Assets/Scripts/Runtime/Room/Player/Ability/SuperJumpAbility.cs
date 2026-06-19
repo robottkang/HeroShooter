@@ -32,11 +32,7 @@ public class SuperJumpAbility : AbilityBase
 
     private async UniTaskVoid AbilityActiveAsync(PlayerController player)
     {
-        player.IsAbilityActive = true;
-
         await UniTask.WaitForSeconds(abilityActiveDuration,
             cancellationToken: player.destroyCancellationToken);
-
-        player.IsAbilityActive = false;
     }
 }

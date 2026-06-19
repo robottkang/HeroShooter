@@ -2,13 +2,11 @@ using Fusion;
 using System;
 using UnityEngine;
 using UnityEngine.InputSystem;
-using UnityEngine.InputSystem.LowLevel;
 
-public class PlayerController : MonoBehaviour/*NetworkBehaviour*/
+public class PlayerController : MonoBehaviour/*NetworkBehaviour*/, IItemInteractor
 {
     private enum MoveState { Idle, Walk, Sprint, Crouch }
-    private enum WeaponState { Idle, Attack, Reload }
-    private enum ActionState { Idle, Aim, Switch, Acquire }
+    private enum ActionState { Idle, Attack, Reload, Switch, Acquire }
 
     [Header("Input")]
     [SerializeField] private InputActionAsset actionAsset;
@@ -53,10 +51,8 @@ public class PlayerController : MonoBehaviour/*NetworkBehaviour*/
     private CharacterController _cc;
 
     private StateMachine _moveFSM;
-    private StateMachine _weaponFSM;
     private StateMachine _actionFSM;
     private MoveState _currentMoveState;
-    private WeaponState _currentWeaponState;
     private ActionState _currentActionState;
 
     private InputAction _moveAction, _lookAction, _jumpAction, _sprintAction, _crouchAction, _reloadAction, _aimAction, _attackAction, _acquireAction, _abilityAction;
@@ -69,8 +65,10 @@ public class PlayerController : MonoBehaviour/*NetworkBehaviour*/
     private float _airSpeed = 5f;
     private bool _isSprinting;
     private bool _isAiming;
+    private bool _isAcquiring;
+    private bool _isNearItem;
 
-    private bool IsActionBlocked => _isSprinting || weaponInventory.IsSwitching || IsAbilityActive;
+    private bool IsActionBlocked => _isSprinting;
     private WeaponBase EquippedWeapon => weaponInventory.CurrentWeapon;
 
     public event Action<bool> OnAimingChanged;
@@ -79,12 +77,10 @@ public class PlayerController : MonoBehaviour/*NetworkBehaviour*/
     public Vector2 MoveInput => _moveInput;
     public bool IsGrounded => _cc.isGrounded;
     public bool IsSprinting => _isSprinting;
-    public bool IsAcquiring => _acquireAction.IsPressed();
+    public bool IsAcquiring => _isAcquiring;
     public bool IsAiming => _isAiming;
     public float WalkSpeed => walkSpeed;
     public float RunSpeed => runSpeed;
-    public bool IsAbilityOverriding { get; set; }
-    public bool IsAbilityActive { get; set; }
     public float VerticalVelocity { get => _verticalVelocity; set => _verticalVelocity = value; }
     public float GravityMultiplier { get; set; } = 1f;
 
@@ -96,7 +92,6 @@ public class PlayerController : MonoBehaviour/*NetworkBehaviour*/
         _cc.center = Vector3.up * (standHeight / 2f);
 
         _moveFSM = new StateMachine(new MoveIdleState(this));
-        _weaponFSM = new StateMachine(new WeaponIdleState(this));
         _actionFSM = new StateMachine(new ActionIdleState(this));
 
         var playerMap = actionAsset.FindActionMap("Player", true);
@@ -130,14 +125,16 @@ public class PlayerController : MonoBehaviour/*NetworkBehaviour*/
 
         HandleLook();
         HandleJumpBuffer();
+        HandleScrollSwitch();
+        HandleNumberKeySwitch();
 
         HandleMoveFSM();
-        HandleWeaponFSM();
         HandleActionFSM();
 
         _moveFSM.UpdateState();
-        _weaponFSM.UpdateState();
         _actionFSM.UpdateState();
+
+        HandleAiming();
         /*
         HandleMovement();
         HandleCrouch();
@@ -220,15 +217,15 @@ public class PlayerController : MonoBehaviour/*NetworkBehaviour*/
 
     private void HandleMoveFSM()
     {
-        if (_moveInput.sqrMagnitude < 0.01f) // when stop
+        if (_crouchAction.IsPressed() || !CanStandUp()) // when press crouch
         {
-            ChangeMoveState(MoveState.Idle);
+            ChangeMoveState(MoveState.Crouch);
             return;
         }
 
-        if (_crouchAction.IsPressed()) // when press crouch
+        if (_moveInput.sqrMagnitude < 0.01f) // when stop
         {
-            ChangeMoveState(MoveState.Crouch);
+            ChangeMoveState(MoveState.Idle);
             return;
         }
 
@@ -241,62 +238,61 @@ public class PlayerController : MonoBehaviour/*NetworkBehaviour*/
         ChangeMoveState(MoveState.Walk);
     }
 
-    private void HandleWeaponFSM()
-    {
-        if (IsActionBlocked) return;
-
-        if (_reloadAction.WasPressedThisFrame())
-        {
-            ChangeWeaponState(WeaponState.Reload);
-            return;
-        }
-
-        bool justPressed = _attackAction.WasPressedThisFrame();
-        bool shouldFire = EquippedWeapon.IsAutomatic ? _attackAction.IsPressed() : justPressed;
-        if (shouldFire)
-        {
-            ChangeWeaponState(WeaponState.Attack);
-            return;
-        }
-
-        ChangeWeaponState(WeaponState.Idle);
-    }
-
     private void HandleActionFSM()
     {
+        if (IsActionBlocked)
+        {
+            ChangeActionState(ActionState.Idle);
+            return;
+        }
+
+        if (weaponInventory.IsSwitching)
+        {
+            ChangeActionState(ActionState.Switch);
+            return;
+        }
+
+        if (EquippedWeapon.IsReloading || _reloadAction.WasPressedThisFrame())
+        {
+            ChangeActionState(ActionState.Reload);
+            return;
+        }
+
+        if (_isNearItem && _acquireAction.IsPressed())
+        {
+            ChangeActionState(ActionState.Acquire);
+            return;
+        }
+
+        bool shouldFire = (EquippedWeapon.IsAutomatic && EquippedWeapon.CurrentAmmo > 0) ?
+            _attackAction.IsPressed() : _attackAction.WasPressedThisFrame();
+        if (shouldFire)
+        {
+            ChangeActionState(ActionState.Attack);
+            return;
+        }
+
         ChangeActionState(ActionState.Idle);
     }
 
     private void ChangeMoveState(MoveState newState)
     {
         if (_currentMoveState == newState) return;
+        _currentMoveState = newState;
 
         switch (newState)
         {
             case MoveState.Idle:
+                _moveFSM.ChangeState(new MoveIdleState(this));
                 break;
             case MoveState.Walk:
+                _moveFSM.ChangeState(new MoveWalkState(this));
                 break;
             case MoveState.Sprint:
+                _moveFSM.ChangeState(new MoveSprintState(this));
                 break;
             case MoveState.Crouch:
-                break;
-            default:
-                throw new NotImplementedException();
-        }
-    }
-
-    private void ChangeWeaponState(WeaponState newState)
-    {
-        if (_currentWeaponState == newState) return;
-
-        switch (newState)
-        {
-            case WeaponState.Idle:
-                break;
-            case WeaponState.Attack:
-                break;
-            case WeaponState.Reload:
+                _moveFSM.ChangeState(new MoveCrouchState(this));
                 break;
             default:
                 throw new NotImplementedException();
@@ -306,35 +302,35 @@ public class PlayerController : MonoBehaviour/*NetworkBehaviour*/
     private void ChangeActionState(ActionState newState)
     {
         if (_currentActionState == newState) return;
+        _currentActionState = newState;
 
         switch (newState)
         {
             case ActionState.Idle:
+                _actionFSM.ChangeState(new ActionIdleState(this));
                 break;
-            case ActionState.Aim:
+            case ActionState.Attack:
+                _actionFSM.ChangeState(new ActionAttackState(this));
+                break;
+            case ActionState.Reload:
+                _actionFSM.ChangeState(new ActionReloadState(this));
                 break;
             case ActionState.Switch:
+                _actionFSM.ChangeState(new ActionSwitchState(this));
                 break;
             case ActionState.Acquire:
+                _actionFSM.ChangeState(new ActionAcquireState(this));
                 break;
             default:
                 throw new NotImplementedException();
         }
     }
 
-    private void HandleCrouch()
-    {
-        if (_crouchAction.IsPressed())
-            IsCrouching = true;
-        else if (IsCrouching && CanStandUp())
-            IsCrouching = false;
-    }
-
     private void HandleJumpBuffer()
     {
         _jumpBufferTimer -= Time.deltaTime;
 
-        if (_jumpAction.WasPressedThisFrame() && !IsCrouching && !IsAbilityActive)
+        if (_jumpAction.WasPressedThisFrame() && !IsCrouching)
         {
             _jumpBufferTimer = jumpBufferTime;
         }
@@ -349,14 +345,12 @@ public class PlayerController : MonoBehaviour/*NetworkBehaviour*/
         transform.Rotate(_lookInput.x * mouseSensitivity.y * Vector3.up);
     }
 
-    private void HandleMovement()
+    public void HandleMovement()
     {
-        if (IsAbilityOverriding) return;
-
         if (_cc.isGrounded && _verticalVelocity < 0f)
             _verticalVelocity = -2f;
 
-        _isSprinting = !IsCrouching && !EquippedWeapon.IsReloading && !IsAbilityActive && _sprintAction.IsPressed();
+        _isSprinting = !IsCrouching && !EquippedWeapon.IsReloading && _sprintAction.IsPressed();
         float speed = IsCrouching ? crouchSpeed : (_isSprinting ? runSpeed : walkSpeed);
 
         if (_cc.isGrounded)
@@ -374,7 +368,12 @@ public class PlayerController : MonoBehaviour/*NetworkBehaviour*/
         _cc.Move(move * Time.deltaTime);
     }
 
-    private void HandleCrouchTransition()
+    public void HandleCrouch(bool isCrouching)
+    {
+        IsCrouching = isCrouching;
+    }
+
+    public void HandleCrouchTransition()
     {
         float targetHeight = IsCrouching ? crouchHeight : standHeight;
         float targetCamY = IsCrouching ? crouchCameraY : standCameraY;
@@ -389,32 +388,58 @@ public class PlayerController : MonoBehaviour/*NetworkBehaviour*/
 
     private void HandleAiming()
     {
-        bool next = _aimAction.IsPressed() && !IsActionBlocked && !EquippedWeapon.IsReloading;
+        bool canAim = (_currentMoveState is not MoveState.Sprint)
+            && (_currentActionState is ActionState.Idle or ActionState.Attack);
 
-        if (next != _isAiming)
+        bool shouldAim = canAim && _aimAction.IsPressed();
+        if (shouldAim != _isAiming)
         {
-            _isAiming = next;
+            _isAiming = shouldAim;
             OnAimingChanged?.Invoke(_isAiming);
-            cameraHolder.SetFieldOfView(_isAiming).Forget();
+            cameraHolder.SetFieldOfView(_isAiming);
         }
     }
 
-    private void HandleReload()
+    public void HandleReload()
     {
-        if (IsActionBlocked) return;
-        if (_reloadAction.WasPressedThisFrame())
-            EquippedWeapon.Reload();
+        EquippedWeapon.Reload();
     }
 
-    private void HandleAttack()
+    public void HandleAttack()
     {
-        if (EquippedWeapon == null || IsActionBlocked) return;
+        EquippedWeapon.Fire(cameraHolder.LocalCamera);
+    }
 
-        bool justPressed = _attackAction.WasPressedThisFrame();
-        bool shouldFire = EquippedWeapon.IsAutomatic ? _attackAction.IsPressed() : justPressed;
+    private void HandleScrollSwitch()
+    {
+        float scroll = Mouse.current.scroll.ReadValue().y;
+        if (scroll > 0f)
+            weaponInventory.EquipPrev();
+        else if (scroll < 0f)
+            weaponInventory.EquipNext();
+    }
 
-        if (shouldFire)
-            EquippedWeapon.Fire(cameraHolder.LocalCamera, justPressed);
+    private void HandleNumberKeySwitch()
+    {
+        var kb = Keyboard.current;
+        for (var i = 0; i < 9; i += 1)
+        {
+            if (kb[Key.Digit1 + i].wasPressedThisFrame)
+            {
+                weaponInventory.Equip(i);
+                break;
+            }
+        }
+    }
+
+    public void HandleAcquire(bool isAcquiring)
+    {
+        _isAcquiring = isAcquiring;
+    }
+
+    public void OnNearItem(bool isNear)
+    {
+        _isNearItem = isNear;
     }
 
     private void HandleAbility()
@@ -424,7 +449,7 @@ public class PlayerController : MonoBehaviour/*NetworkBehaviour*/
             ability.TryUse(this);
     }
 
-    private bool CanStandUp()
+    public bool CanStandUp()
     {
         Vector3 origin = transform.position + Vector3.up * _cc.height;
         float checkDistance = standHeight - _cc.height;

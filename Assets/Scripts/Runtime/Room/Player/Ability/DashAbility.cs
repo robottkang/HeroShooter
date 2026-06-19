@@ -23,25 +23,17 @@ public class DashAbility : AbilityBase
         float speed = dashDistance / dashDuration;
         float elapsed = 0f;
 
-        player.IsAbilityOverriding = true;
-
         while (elapsed < dashDuration)
         {
             player.CC.Move(dir * speed * Time.deltaTime);
             elapsed += Time.deltaTime;
             await UniTask.Yield(cancellationToken: player.destroyCancellationToken);
         }
-
-        player.IsAbilityOverriding = false;
     }
 
     private async UniTaskVoid AbilityActiveAsync(PlayerController player)
     {
-        player.IsAbilityActive = true;
-
         await UniTask.WaitForSeconds(abilityActiveDuration,
             cancellationToken: player.destroyCancellationToken);
-
-        player.IsAbilityActive = false;
     }
 }

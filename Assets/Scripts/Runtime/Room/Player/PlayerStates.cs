@@ -8,7 +8,11 @@ public class MoveIdleState : BaseState
 
     public override void OnStateExit() { }
 
-    public override void OnStateUpdate() { }
+    public override void OnStateUpdate()
+    {
+        _player.HandleMovement();
+        _player.HandleCrouchTransition();
+    }
 }
 
 public class MoveWalkState : BaseState
@@ -19,7 +23,11 @@ public class MoveWalkState : BaseState
 
     public override void OnStateExit() { }
 
-    public override void OnStateUpdate() { }
+    public override void OnStateUpdate()
+    {
+        _player.HandleMovement();
+        _player.HandleCrouchTransition();
+    }
 }
 
 public class MoveSprintState : BaseState
@@ -30,51 +38,32 @@ public class MoveSprintState : BaseState
 
     public override void OnStateExit() { }
 
-    public override void OnStateUpdate() { }
+    public override void OnStateUpdate()
+    {
+        _player.HandleMovement();
+        _player.HandleCrouchTransition();
+    }
 }
 
 public class MoveCrouchState : BaseState
 {
     public MoveCrouchState(PlayerController player) : base(player) { }
 
-    public override void OnStateEnter() { }
+    public override void OnStateEnter()
+    {
+        _player.HandleCrouch(true);
+    }
 
-    public override void OnStateExit() { }
+    public override void OnStateExit()
+    {
+        _player.HandleCrouch(false);
+    }
 
-    public override void OnStateUpdate() { }
-}
-
-public class WeaponIdleState : BaseState
-{
-    public WeaponIdleState(PlayerController player) : base(player) { }
-
-    public override void OnStateEnter() { }
-
-    public override void OnStateExit() { }
-
-    public override void OnStateUpdate() { }
-}
-
-public class WeaponAttackState : BaseState
-{
-    public WeaponAttackState(PlayerController player) : base(player) { }
-
-    public override void OnStateEnter() { }
-
-    public override void OnStateExit() { }
-
-    public override void OnStateUpdate() { }
-}
-
-public class WeaponReloadState : BaseState
-{
-    public WeaponReloadState(PlayerController player) : base(player) { }
-
-    public override void OnStateEnter() { }
-
-    public override void OnStateExit() { }
-
-    public override void OnStateUpdate() { }
+    public override void OnStateUpdate()
+    {
+        _player.HandleMovement();
+        _player.HandleCrouchTransition();
+    }
 }
 
 public class ActionIdleState : BaseState
@@ -87,16 +76,35 @@ public class ActionIdleState : BaseState
 
     public override void OnStateUpdate() { }
 }
-public class ActionAimState : BaseState
+
+public class ActionAttackState : BaseState
 {
-    public ActionAimState(PlayerController player) : base(player) { }
+    public ActionAttackState(PlayerController player) : base(player) { }
 
     public override void OnStateEnter() { }
 
     public override void OnStateExit() { }
 
+    public override void OnStateUpdate()
+    {
+        _player.HandleAttack();
+    }
+}
+
+public class ActionReloadState : BaseState
+{
+    public ActionReloadState(PlayerController player) : base(player) { }
+
+    public override void OnStateEnter()
+    {
+        _player.HandleReload();
+    }
+
+    public override void OnStateExit() { }
+
     public override void OnStateUpdate() { }
 }
+
 public class ActionSwitchState : BaseState
 {
     public ActionSwitchState(PlayerController player) : base(player) { }
@@ -107,13 +115,20 @@ public class ActionSwitchState : BaseState
 
     public override void OnStateUpdate() { }
 }
+
 public class ActionAcquireState : BaseState
 {
     public ActionAcquireState(PlayerController player) : base(player) { }
 
-    public override void OnStateEnter() { }
+    public override void OnStateEnter()
+    {
+        _player.HandleAcquire(true);
+    }
 
-    public override void OnStateExit() { }
+    public override void OnStateExit()
+    {
+        _player.HandleAcquire(false);
+    }
 
     public override void OnStateUpdate() { }
 }

@@ -3,8 +3,6 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using UnityEngine;
-using UnityEngine.InputSystem;
-using UnityEngine.InputSystem.Controls;
 
 public class WeaponInventory : MonoBehaviour
 {
@@ -34,12 +32,6 @@ public class WeaponInventory : MonoBehaviour
 
         if (_weapons.Count > 0)
             EquipInternal(0);
-    }
-
-    private void Update()
-    {
-        HandleScrollSwitch();
-        HandleNumberKeySwitch();
     }
 
     public void AddWeapon(WeaponBase weapon)
@@ -82,6 +74,16 @@ public class WeaponInventory : MonoBehaviour
         EquipAsync(index, _switchCts.Token).Forget();
     }
 
+    public void EquipNext()
+    {
+        Equip((_currentIndex + 1) % _weapons.Count);
+    }
+
+    public void EquipPrev()
+    {
+        Equip((_currentIndex - 1 + _weapons.Count) % _weapons.Count);
+    }
+
     private async UniTaskVoid EquipAsync(int index, CancellationToken token)
     {
         _isSwitching = true;
@@ -120,36 +122,5 @@ public class WeaponInventory : MonoBehaviour
         _currentIndex = index;
         _weapons[_currentIndex].gameObject.SetActive(true);
         EventBus<WeaponChangedEvent>.Raise(new WeaponChangedEvent(CurrentWeapon));
-    }
-
-    private void HandleScrollSwitch()
-    {
-        if (_weapons.Count < 2) return;
-
-        float scroll = Mouse.current.scroll.ReadValue().y;
-        if (scroll > 0f)
-            Equip((_currentIndex - 1 + _weapons.Count) % _weapons.Count);
-        else if (scroll < 0f)
-            Equip((_currentIndex + 1) % _weapons.Count);
-    }
-
-    private void HandleNumberKeySwitch()
-    {
-        var kb = Keyboard.current;
-        if (kb == null) return;
-
-        KeyControl[] keyControls = {
-            kb.digit1Key, kb.digit2Key, kb.digit3Key,
-            kb.digit4Key, kb.digit5Key, kb.digit6Key,
-            kb.digit7Key, kb.digit8Key, kb.digit9Key };
-
-        for (var i = 0; i < 9; i += 1)
-        {
-            if (keyControls[i].wasPressedThisFrame)
-            {
-                Equip(i);
-                break;
-            }
-        }
     }
 }

@@ -1,4 +1,5 @@
 using Cysharp.Threading.Tasks;
+using System.Threading;
 using UnityEngine;
 
 public class PlayerCameraController : MonoBehaviour
@@ -7,8 +8,11 @@ public class PlayerCameraController : MonoBehaviour
     [SerializeField] private Camera localCamera;
 
     [SerializeField] private float normalViewAngle = 60f;
-    [SerializeField] private float aimmingViewAngle = 45f;
+    [SerializeField] private float aimingViewAngle = 45f;
     [SerializeField] private float angleSwitchingDuration = 0.3f;
+
+    private float _elapsedTime = 0f;
+    private CancellationTokenSource _cts = new();
 
     public Camera RemoteCamera => remoteCamera;
     public Camera LocalCamera => localCamera;
@@ -18,20 +22,37 @@ public class PlayerCameraController : MonoBehaviour
         ActiveLocalCamera();
     }
 
-    public async UniTaskVoid SetFieldOfView(bool isAiming)
+    public void SetFieldOfView(bool isAiming)
     {
-        var targetAngle = isAiming ? aimmingViewAngle : normalViewAngle;
-        float start = localCamera.fieldOfView;
-        float elapsed = 0f;
+        _cts.Cancel();
+        _cts.Dispose();
+        _cts = new();
 
-        while (elapsed < angleSwitchingDuration)
+        SetFieldOfViewAsync(isAiming).Forget();
+    }
+
+    private async UniTaskVoid SetFieldOfViewAsync(bool isAiming)
+    {
+        if (isAiming)
         {
-            elapsed += Time.deltaTime;
-            localCamera.fieldOfView = Mathf.Lerp(start, targetAngle, elapsed / angleSwitchingDuration);
-            await UniTask.Yield(cancellationToken: destroyCancellationToken);
+            while (_elapsedTime < angleSwitchingDuration)
+            {
+                _elapsedTime += Time.deltaTime;
+                localCamera.fieldOfView = Mathf.Lerp(normalViewAngle, aimingViewAngle, _elapsedTime / angleSwitchingDuration);
+                await UniTask.Yield(cancellationToken: _cts.Token);
+            }
+            localCamera.fieldOfView = aimingViewAngle;
         }
-
-        localCamera.fieldOfView = targetAngle;
+        else
+        {
+            while (_elapsedTime > 0f)
+            {
+                _elapsedTime -= Time.deltaTime;
+                localCamera.fieldOfView = Mathf.Lerp(normalViewAngle, aimingViewAngle, _elapsedTime / angleSwitchingDuration);
+                await UniTask.Yield(cancellationToken: _cts.Token);
+            }
+            localCamera.fieldOfView = normalViewAngle;
+        }
     }
 
     public void ActiveRemoteCamera()

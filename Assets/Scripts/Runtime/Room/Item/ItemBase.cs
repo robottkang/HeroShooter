@@ -5,20 +5,23 @@ public abstract class ItemBase : MonoBehaviour
     [SerializeField] private float rotSpeed = 30f;
     [SerializeField] private float acquireTime = 5f;
 
-    private PlayerController _candidate;
+    private IItemInteractor _candidate;
     [SerializeField, Fusion.ReadOnly] private float _progress;
 
     private void OnTriggerEnter(Collider other)
     {
-        if (!other.TryGetComponent<PlayerController>(out var player) && _candidate != null) return;
-        _candidate = player;
+        if (_candidate != null) return;
+        if (!other.TryGetComponent<IItemInteractor>(out var interactor)) return;
+        _candidate = interactor;
+        _candidate.OnNearItem(true);
         _progress = 0f;
         EventBus<ItemAcquireProgressEvent>.Raise(new ItemAcquireProgressEvent(0f, true));
     }
 
     private void OnTriggerExit(Collider other)
     {
-        if (!other.TryGetComponent<PlayerController>(out var player) || player != _candidate) return;
+        if (!other.TryGetComponent<IItemInteractor>(out var interactor) || interactor != _candidate) return;
+        _candidate.OnNearItem(false);
         _candidate = null;
         _progress = 0f;
         EventBus<ItemAcquireProgressEvent>.Raise(new ItemAcquireProgressEvent(0f, false));
@@ -26,8 +29,9 @@ public abstract class ItemBase : MonoBehaviour
 
     private void OnDestroy()
     {
-        if (_candidate != null)
-            EventBus<ItemAcquireProgressEvent>.Raise(new ItemAcquireProgressEvent(0f, false));
+        if (_candidate == null) return;
+        _candidate.OnNearItem(false);
+        EventBus<ItemAcquireProgressEvent>.Raise(new ItemAcquireProgressEvent(0f, false));
     }
 
     private void Update()
@@ -55,7 +59,7 @@ public abstract class ItemBase : MonoBehaviour
         EventBus<ItemAcquireProgressEvent>.Raise(new ItemAcquireProgressEvent(_progress / acquireTime, true));
 
         if (_progress >= acquireTime)
-            Acquire(_candidate);
+            Acquire((PlayerController)_candidate);
     }
 
     public abstract void Acquire(PlayerController player);
