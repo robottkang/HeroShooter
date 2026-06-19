@@ -123,6 +123,7 @@ public class PlayerController : MonoBehaviour/*NetworkBehaviour*/, IItemInteract
         _moveInput = _moveAction.ReadValue<Vector2>();
         _lookInput = _lookAction.ReadValue<Vector2>();
 
+        HandleAbility();
         HandleLook();
         HandleJumpBuffer();
         HandleScrollSwitch();
@@ -217,6 +218,12 @@ public class PlayerController : MonoBehaviour/*NetworkBehaviour*/, IItemInteract
 
     private void HandleMoveFSM()
     {
+        if (ability.IsActive && ability.BlockFlags.HasFlag(AbilityBlockFlags.Move))
+        {
+            ChangeMoveState(MoveState.Idle);
+            return;
+        }
+
         if (_crouchAction.IsPressed() || !CanStandUp()) // when press crouch
         {
             ChangeMoveState(MoveState.Crouch);
@@ -240,7 +247,7 @@ public class PlayerController : MonoBehaviour/*NetworkBehaviour*/, IItemInteract
 
     private void HandleActionFSM()
     {
-        if (IsActionBlocked)
+        if (IsActionBlocked || (ability.IsActive && ability.BlockFlags.HasFlag(AbilityBlockFlags.Action)))
         {
             ChangeActionState(ActionState.Idle);
             return;
@@ -330,7 +337,7 @@ public class PlayerController : MonoBehaviour/*NetworkBehaviour*/, IItemInteract
     {
         _jumpBufferTimer -= Time.deltaTime;
 
-        if (_jumpAction.WasPressedThisFrame() && !IsCrouching)
+        if (_jumpAction.WasPressedThisFrame())
         {
             _jumpBufferTimer = jumpBufferTime;
         }
@@ -444,7 +451,6 @@ public class PlayerController : MonoBehaviour/*NetworkBehaviour*/, IItemInteract
 
     private void HandleAbility()
     {
-        if (ability == null) return;
         if (_abilityAction.WasPressedThisFrame())
             ability.TryUse(this);
     }

@@ -8,13 +8,9 @@ public class SuperJumpAbility : AbilityBase
     [SerializeField] private float hangDuration = 0.6f;
     [SerializeField] private float abilityActiveDuration = 0.2f;
 
-    protected override void UseAbility(PlayerController player)
-    {
-        SuperJumpAsync(player).Forget();
-        AbilityActiveAsync(player).Forget();
-    }
+    public override AbilityBlockFlags BlockFlags => AbilityBlockFlags.Action;
 
-    private async UniTaskVoid SuperJumpAsync(PlayerController player)
+    protected override async UniTask UseAbilityAsync(PlayerController player)
     {
         player.VerticalVelocity = jumpVelocity;
 
@@ -28,11 +24,5 @@ public class SuperJumpAbility : AbilityBase
             cancellationToken: player.destroyCancellationToken);
 
         player.GravityMultiplier = 1f;
-    }
-
-    private async UniTaskVoid AbilityActiveAsync(PlayerController player)
-    {
-        await UniTask.WaitForSeconds(abilityActiveDuration,
-            cancellationToken: player.destroyCancellationToken);
     }
 }

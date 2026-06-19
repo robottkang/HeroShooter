@@ -7,13 +7,9 @@ public class DashAbility : AbilityBase
     [SerializeField] private float dashDuration = 0.2f;
     [SerializeField] private float abilityActiveDuration = 0.2f;
 
-    protected override void UseAbility(PlayerController player)
-    {
-        DashAsync(player).Forget();
-        AbilityActiveAsync(player).Forget();
-    }
+    public override AbilityBlockFlags BlockFlags => AbilityBlockFlags.Move | AbilityBlockFlags.Action;
 
-    private async UniTaskVoid DashAsync(PlayerController player)
+    protected override async UniTask UseAbilityAsync(PlayerController player)
     {
         Vector2 input = player.MoveInput;
         Vector3 dir = input.sqrMagnitude > 0.01f
@@ -29,11 +25,5 @@ public class DashAbility : AbilityBase
             elapsed += Time.deltaTime;
             await UniTask.Yield(cancellationToken: player.destroyCancellationToken);
         }
-    }
-
-    private async UniTaskVoid AbilityActiveAsync(PlayerController player)
-    {
-        await UniTask.WaitForSeconds(abilityActiveDuration,
-            cancellationToken: player.destroyCancellationToken);
     }
 }

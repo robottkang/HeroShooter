@@ -1,13 +1,19 @@
 using UnityEngine;
+using Cysharp.Threading.Tasks;
+
+[System.Flags]
+public enum AbilityBlockFlags { None = 0, Move = 1, Action = 2 }
 
 public abstract class AbilityBase : MonoBehaviour
 {
-    [SerializeField] private float cooldown = 5f;
+    [SerializeField] protected float cooldown = 5f;
 
-    private float _cooldownTimer;
+    protected float _cooldownTimer;
 
     public bool IsReady => _cooldownTimer <= 0f;
+    public bool IsActive { get; private set; }
     public float Cooldown => cooldown;
+    public abstract AbilityBlockFlags BlockFlags { get; }
 
     private void Update()
     {
@@ -17,11 +23,18 @@ public abstract class AbilityBase : MonoBehaviour
 
     public bool TryUse(PlayerController player)
     {
-        if (!IsReady) return false;
-        UseAbility(player);
+        if (!IsReady || IsActive) return false;
         _cooldownTimer = cooldown;
+        RunAbilityAsync(player).Forget();
         return true;
     }
 
-    protected abstract void UseAbility(PlayerController player);
+    private async UniTaskVoid RunAbilityAsync(PlayerController player)
+    {
+        IsActive = true;
+        await UseAbilityAsync(player);
+        IsActive = false;
+    }
+
+    protected abstract UniTask UseAbilityAsync(PlayerController player);
 }
