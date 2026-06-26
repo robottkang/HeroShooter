@@ -1,19 +1,21 @@
+using Fusion;
+
+// UI
 public struct HealthChangedEvent
 {
-    public HealthChangedEvent(Health target, float current, float extra, float max)
+    public HealthChangedEvent(PlayerRef source, float current, float extra, float max)
     {
-        Target = target;
+        Source = source;
         Current = current;
         Extra = extra;
         Max = max;
     }
-    public Health Target;
-    public float Current;
-    public float Extra;
-    public float Max;
-}
 
-public struct PlayerDiedEvent { }
+    public readonly PlayerRef Source { get; }
+    public readonly float Current { get; }
+    public readonly float Extra { get; }
+    public readonly float Max { get; }
+}
 
 public struct AmmoChangedEvent
 {
@@ -22,17 +24,42 @@ public struct AmmoChangedEvent
         Current = current;
         Reserve = reserve;
     }
-    public int Current;
-    public int Reserve;
+
+    public readonly int Current { get; }
+    public readonly int Reserve { get; }
 }
 
 public struct WeaponChangedEvent
 {
     public WeaponChangedEvent(WeaponBase weapon)
     {
+        //Player = target;
         Weapon = weapon;
     }
-    public WeaponBase Weapon;
+
+    //public readonly PlayerRef Player { get; }
+    public readonly WeaponBase Weapon { get; }
+}
+
+public struct AimChangedEvent
+{
+    public AimChangedEvent(bool isAiming)
+    {
+        IsAiming = isAiming;
+    }
+
+    public readonly bool IsAiming { get; }
+}
+
+// Action
+public struct PlayerDiedEvent
+{
+    public PlayerDiedEvent(PlayerRef target)
+    {
+        Player = target;
+    }
+
+    public readonly PlayerRef Player { get; }
 }
 
 public struct PositionRevealedEvent
@@ -42,8 +69,9 @@ public struct PositionRevealedEvent
         Target = target;
         Duration = duration;
     }
-    public Highlighter Target;
-    public float Duration;
+
+    public readonly Highlighter Target { get; }
+    public readonly float Duration { get; }
 }
 
 public struct ItemAcquireProgressEvent
@@ -53,6 +81,7 @@ public struct ItemAcquireProgressEvent
         Normalized = normalized;
         InRange = inRange;
     }
-    public float Normalized;
-    public bool InRange;
+
+    public readonly float Normalized { get; }
+    public readonly bool InRange { get; }
 }

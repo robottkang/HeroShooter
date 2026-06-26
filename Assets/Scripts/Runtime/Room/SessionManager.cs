@@ -15,8 +15,6 @@ public class SessionManager : SimulationBehaviour
     [Header("Debug")]
     [SerializeField] private bool isDebug;
     [SerializeField] private NetworkRunner runnerPrefab;
-#else
-    private bool isDebug = false;
 #endif
 
     private void Start()
@@ -60,9 +58,7 @@ public class SessionManager : SimulationBehaviour
         var runner = NetworkRunner.GetRunnerForGameObject(gameObject);
 
         if (runner.IsRunning)
-        {
             runner.AddGlobal(this);
-        }
     }
 
     private async UniTask StartDebugSession()

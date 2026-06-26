@@ -1,15 +1,31 @@
+using Fusion;
 using UnityEngine;
 
-public class ItemSpawner : MonoBehaviour
+public class ItemSpawner : SimulationBehaviour
 {
     [SerializeField] private ItemBase[] itemPrefabs;
     [SerializeField] private Transform spawnPoint;
 
-    private void Start()
+    public void Awake()
     {
+        if (Runner != null)
+            RegisterOnRunner();
+    }
+
+    public void Start()
+    {
+        if (Runner == null || Runner.IsSharedModeMasterClient) return;
         if (itemPrefabs == null || itemPrefabs.Length == 0) return;
 
         var prefab = itemPrefabs[Random.Range(0, itemPrefabs.Length)];
-        Instantiate(prefab, spawnPoint.position, spawnPoint.rotation);
+        Runner.Spawn(prefab.gameObject, spawnPoint.position, spawnPoint.rotation);
+    }
+
+    public void RegisterOnRunner()
+    {
+        var runner = NetworkRunner.GetRunnerForGameObject(gameObject);
+
+        if (runner.IsRunning)
+            runner.AddGlobal(this);
     }
 }

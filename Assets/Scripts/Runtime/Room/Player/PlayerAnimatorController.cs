@@ -1,7 +1,7 @@
 using Fusion;
 using UnityEngine;
 
-public class PlayerAnimatorController : SimulationBehaviour
+public class PlayerAnimatorController : MonoBehaviour
 {
     [Header("References")]
     [SerializeField] private PlayerController playerController;
@@ -33,7 +33,7 @@ public class PlayerAnimatorController : SimulationBehaviour
             playerController.OnJump -= TriggerJump;
     }
 
-    public override void Render()
+    public void Update()
     {
         var moveDir = playerController.MoveInput.normalized;
 

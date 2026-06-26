@@ -2640,7 +2640,6 @@ GameObject:
   - component: {fileID: 5799965577927399923}
   - component: {fileID: 8907916417740226833}
   - component: {fileID: -8695205575591228197}
-  - component: {fileID: 3825796302250068311}
   - component: {fileID: 3319058786258908537}
   m_Layer: 7
   m_Name: Player Jumper
@@ -2745,6 +2744,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Health
   maxHealth: 100
+  _CurrentHealth: 0
+  _ExtraHealth: 0
 --- !u!114 &-8695205575591228197
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2762,19 +2763,6 @@ MonoBehaviour:
   jumpVelocity: 15
   gravityMultiplier: 0.2
   hangDuration: 0.6
---- !u!114 &3825796302250068311
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6538525284220438900}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f2de8ff390e0d2f4a96df38c89d2cd75, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::PlayerUISpawner
-  hudManagerPrefab: {fileID: 921204849103990248, guid: aa27ee5e4748d3a469696c3a78a8afa8, type: 3}
 --- !u!114 &3319058786258908537
 MonoBehaviour:
   m_ObjectHideFlags: 0

@@ -5,10 +5,10 @@ public class Health : NetworkBehaviour, IDamageable
 {
     [SerializeField] private float maxHealth = 100f;
 
-    [Networked, OnChangedRender(nameof(OnHealthChangedRender))]
+    [SerializeField, Networked, OnChangedRender(nameof(OnHealthChangedRender))]
     private float CurrentHealth { get; set; }
 
-    [Networked, OnChangedRender(nameof(OnHealthChangedRender))]
+    [SerializeField, Networked, OnChangedRender(nameof(OnHealthChangedRender))]
     private float ExtraHealth { get; set; }
 
     public float Current => CurrentHealth;
@@ -73,6 +73,6 @@ public class Health : NetworkBehaviour, IDamageable
 
     private void OnHealthChangedRender()
     {
-        EventBus<HealthChangedEvent>.Raise(new HealthChangedEvent(this, CurrentHealth, ExtraHealth, maxHealth));
+        EventBus<HealthChangedEvent>.Raise(new HealthChangedEvent(Runner.LocalPlayer, CurrentHealth, ExtraHealth, maxHealth));
     }
 }

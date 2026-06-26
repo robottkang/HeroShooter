@@ -83,9 +83,10 @@ public abstract class WeaponBase : MonoBehaviour
         OnFired?.Invoke();
         //var cameraBasedHit =
         Physics.Raycast(targetCamera.transform.position, targetCamera.transform.forward, out RaycastHit hit, range, hitMask);
-        var muzzleBasedHit = Physics.Raycast(firePoint.position, hit.point, out RaycastHit actualHit, range, hitMask);
+        var muzzleBasedHit = Physics.Raycast(firePoint.position, (hit.point - firePoint.position).normalized, out RaycastHit actualHit, range, hitMask);
         if (muzzleBasedHit)
         {
+            Debug.Log($"{ hit.collider }, { actualHit.collider }");
             if (actualHit.collider.TryGetComponent<IDamageable>(out var target))
                 target.TakeDamage(damage);
         }

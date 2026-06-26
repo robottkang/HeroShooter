@@ -1,5 +1,10 @@
 public interface IItemInteractor
 {
-    bool IsAcquiring { get; }
-    void OnNearItem(bool isNear);
+    public bool IsAcquiring { get; }
+    public void OnNearItem(bool isNear);
+}
+
+public interface IHealthInteractor
+{
+
 }

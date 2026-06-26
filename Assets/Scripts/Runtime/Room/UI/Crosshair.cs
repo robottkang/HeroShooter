@@ -2,26 +2,26 @@ using Cysharp.Threading.Tasks;
 using System.Threading;
 using UnityEngine;
 
-public class Crosshair : MonoBehaviour
+public class Crosshair : MonoBehaviour, IEventListener<AimChangedEvent>
 {
     [SerializeField] private float fadeDuration = 0.2f;
 
     private CanvasGroup _canvasGroup;
     private CancellationTokenSource _cts;
 
+    private void OnEnable()
+    {
+        EventBus<AimChangedEvent>.Register(this);
+    }
+
+    private void OnDisable()
+    {
+        EventBus<AimChangedEvent>.Unregister(this);
+    }
+
     private void Awake()
     {
         _canvasGroup = GetComponent<CanvasGroup>();
-    }
-
-    public void Show()
-    {
-        Fade(1f);
-    }
-
-    public void Hide()
-    {
-        Fade(0f);
     }
 
     private void Fade(float target)
@@ -51,5 +51,13 @@ public class Crosshair : MonoBehaviour
     {
         _cts?.Cancel();
         _cts?.Dispose();
+    }
+
+    public void OnEvent(AimChangedEvent e)
+    {
+        if (e.IsAiming)
+            Fade(0f);
+        else
+            Fade(1f);
     }
 }
