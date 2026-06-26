@@ -3,7 +3,7 @@ using System;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
-public class PlayerController : MonoBehaviour/*NetworkBehaviour*/, IItemInteractor
+public class PlayerController : NetworkBehaviour, IItemInteractor
 {
     private enum MoveState { Idle, Walk, Sprint, Crouch }
     private enum ActionState { Idle, Attack, Reload, Switch, Acquire }
@@ -47,6 +47,10 @@ public class PlayerController : MonoBehaviour/*NetworkBehaviour*/, IItemInteract
     [Networked] private Quaternion NetworkedRotation { get; set; }
     [Networked] public float CamPitch { get; private set; }
     [Networked] public NetworkBool IsCrouching { get; private set; }
+    [Networked] public NetworkBool IsGrounded { get; private set; }
+    [Networked] public Vector2 MoveInput { get; private set; }
+    [Networked] public NetworkBool IsSprinting { get; private set; }
+    [Networked] public NetworkBool IsAiming { get; private set; }
 
     private CharacterController _cc;
 
@@ -73,52 +77,59 @@ public class PlayerController : MonoBehaviour/*NetworkBehaviour*/, IItemInteract
     public event Action<bool> OnAimingChanged;
     public event Action OnJump;
     public CharacterController CC => _cc;
-    public Vector2 MoveInput => _moveInput;
-    public bool IsGrounded => _cc.isGrounded;
-    public bool IsSprinting => _isSprinting;
     public bool IsAcquiring => _isAcquiring;
-    public bool IsAiming => _isAiming;
     public float WalkSpeed => walkSpeed;
     public float RunSpeed => runSpeed;
     public float VerticalVelocity { get => _verticalVelocity; set => _verticalVelocity = value; }
     public float GravityMultiplier { get; set; } = 1f;
 
-    private void Awake()
+    public override void Spawned()
     {
         _cc = GetComponent<CharacterController>();
 
         _cc.height = standHeight;
         _cc.center = Vector3.up * (standHeight / 2f);
 
-        _moveFSM = new StateMachine(new MoveIdleState(this));
-        _actionFSM = new StateMachine(new ActionIdleState(this));
+        if (Object.HasInputAuthority)
+        {
+            _moveFSM = new StateMachine(new MoveIdleState(this));
+            _actionFSM = new StateMachine(new ActionIdleState(this));
 
-        var playerMap = actionAsset.FindActionMap("Player", true);
-        _moveAction = playerMap.FindAction("Move", true);
-        _lookAction = playerMap.FindAction("Look", true);
-        _jumpAction = playerMap.FindAction("Jump", true);
-        _sprintAction = playerMap.FindAction("Sprint", true);
-        _crouchAction = playerMap.FindAction("Crouch", true);
-        _reloadAction = playerMap.FindAction("Reload", true);
-        _attackAction = playerMap.FindAction("Attack", true);
-        _aimAction = playerMap.FindAction("Aim", true);
-        _acquireAction = playerMap.FindAction("Acquire", true);
-        _abilityAction = playerMap.FindAction("Ability", true);
+            var playerMap = actionAsset.FindActionMap("Player", true);
+            _moveAction = playerMap.FindAction("Move", true);
+            _lookAction = playerMap.FindAction("Look", true);
+            _jumpAction = playerMap.FindAction("Jump", true);
+            _sprintAction = playerMap.FindAction("Sprint", true);
+            _crouchAction = playerMap.FindAction("Crouch", true);
+            _reloadAction = playerMap.FindAction("Reload", true);
+            _attackAction = playerMap.FindAction("Attack", true);
+            _aimAction = playerMap.FindAction("Aim", true);
+            _acquireAction = playerMap.FindAction("Acquire", true);
+            _abilityAction = playerMap.FindAction("Ability", true);
 
-        _moveAction.Enable();
-        _lookAction.Enable();
-        _jumpAction.Enable();
-        _sprintAction.Enable();
-        _crouchAction.Enable();
-        _reloadAction.Enable();
-        _attackAction.Enable();
-        _aimAction.Enable();
-        _acquireAction.Enable();
-        _abilityAction.Enable();
+            _moveAction.Enable();
+            _lookAction.Enable();
+            _jumpAction.Enable();
+            _sprintAction.Enable();
+            _crouchAction.Enable();
+            _reloadAction.Enable();
+            _attackAction.Enable();
+            _aimAction.Enable();
+            _acquireAction.Enable();
+            _abilityAction.Enable();
+        }
+        else
+        {
+            SetLayerRecursively(gameObject, LayerMask.NameToLayer("RemotePlayer_Other"));
+            _cc.enabled = false;
+            if (cameraHolder != null)
+                cameraHolder.gameObject.SetActive(false);
+        }
     }
-
     private void Update()
     {
+        if (!Object.HasInputAuthority) return;
+
         _moveInput = _moveAction.ReadValue<Vector2>();
         _lookInput = _lookAction.ReadValue<Vector2>();
 
@@ -135,67 +146,18 @@ public class PlayerController : MonoBehaviour/*NetworkBehaviour*/, IItemInteract
         _actionFSM.UpdateState();
 
         HandleAiming();
-        /*
-        HandleMovement();
-        HandleCrouch();
-
-        HandleCrouchTransition();
-        HandleReload();
-        HandleAiming();
-        HandleAttack();
-        HandleAbility();
-        */
-    }
-
-    /*
-    public override void Spawned()
-    {
-        _cc = GetComponent<CharacterController>();
-
-        _cc.height = standHeight;
-        _cc.center = Vector3.up * (standHeight / 2f);
-
-        if (Object.HasInputAuthority)
-        {
-            SetLayerRecursively(gameObject, LayerMask.NameToLayer("RemotePlayer_Self"));
-
-            var playerMap = actionAsset.FindActionMap("Player", true);
-            _moveAction = playerMap.FindAction("Move", true);
-            _lookAction = playerMap.FindAction("Look", true);
-            _jumpAction = playerMap.FindAction("Jump", true);
-            _sprintAction = playerMap.FindAction("Sprint", true);
-            _crouchAction = playerMap.FindAction("Crouch", true);
-
-            _moveAction.Enable();
-            _lookAction.Enable();
-            _jumpAction.Enable();
-            _sprintAction.Enable();
-            _crouchAction.Enable();
-        }
-        else
-        {
-            SetLayerRecursively(gameObject, LayerMask.NameToLayer("RemotePlayer_Other"));
-            _cc.enabled = false;
-            if (cameraHolder != null)
-                cameraHolder.gameObject.SetActive(false);
-        }
     }
 
     public override void FixedUpdateNetwork()
     {
         if (!Object.HasInputAuthority) return;
 
-        _moveInput = _moveAction.ReadValue<Vector2>();
-        _lookInput = _lookAction.ReadValue<Vector2>();
-
-        HandleCrouch();
-        HandleJumpBuffer();
-        HandleLook();
-        HandleMovement();
-        HandleCrouchTransition();
-
         NetworkedPosition = transform.position;
         NetworkedRotation = transform.rotation;
+        IsGrounded = _cc.isGrounded;
+        MoveInput = _moveInput;
+        IsSprinting = _isSprinting;
+        IsAiming = _isAiming;
     }
 
     public override void Render()
@@ -212,34 +174,39 @@ public class PlayerController : MonoBehaviour/*NetworkBehaviour*/, IItemInteract
             camRot = Quaternion.Lerp(camRot, Quaternion.Euler(CamPitch, 0, 0), Time.deltaTime * 15f);
             cameraHolder.transform.localRotation = camRot;
         }
-    }*/
+    }
 
     private void HandleMoveFSM()
     {
+        // while ability that block movement is active
         if (ability.IsActive && ability.BlockFlags.HasFlag(AbilityBlockFlags.Move))
         {
             ChangeMoveState(MoveState.Idle);
             return;
         }
 
-        if (_crouchAction.IsPressed() || !CanStandUp()) // when press crouch
+        // while crouch key(LCtrl) is pressed
+        if (_crouchAction.IsPressed() || !CanStandUp())
         {
             ChangeMoveState(MoveState.Crouch);
             return;
         }
 
-        if (_moveInput.sqrMagnitude < 0.01f) // when stop
+        // when wasd is not pressed
+        if (_moveInput.sqrMagnitude < 0.01f)
         {
             ChangeMoveState(MoveState.Idle);
             return;
         }
 
-        if (_sprintAction.IsPressed()) // when press sprint
+        // while sprint key(LShift) is pressed
+        if (_sprintAction.IsPressed())
         {
             ChangeMoveState(MoveState.Sprint);
             return;
         }
 
+        // when just wasd is pressed
         ChangeMoveState(MoveState.Walk);
     }
 
@@ -460,7 +427,7 @@ public class PlayerController : MonoBehaviour/*NetworkBehaviour*/, IItemInteract
         return !Physics.SphereCast(origin, _cc.radius * 0.9f, Vector3.up, out _, checkDistance + 0.05f);
     }
 
-    //[Rpc(RpcSources.InputAuthority, RpcTargets.All)]
+    [Rpc(RpcSources.InputAuthority, RpcTargets.All)]
     private void RPC_Jump()
     {
         OnJump?.Invoke();

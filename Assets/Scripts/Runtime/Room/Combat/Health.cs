@@ -1,63 +1,78 @@
 using Fusion;
-using System;
 using UnityEngine;
 
-public class Health : MonoBehaviour, IDamageable
+public class Health : NetworkBehaviour, IDamageable
 {
     [SerializeField] private float maxHealth = 100f;
-    [SerializeField, ReadOnly] private float currentHealth;
-    [SerializeField, ReadOnly] private float extraHealth;
 
-    public float Current => currentHealth;
+    [Networked, OnChangedRender(nameof(OnHealthChangedRender))]
+    private float CurrentHealth { get; set; }
+
+    [Networked, OnChangedRender(nameof(OnHealthChangedRender))]
+    private float ExtraHealth { get; set; }
+
+    public float Current => CurrentHealth;
     public float Max => maxHealth;
-    public float Extra => extraHealth;
-    public float Total => maxHealth + extraHealth;
-    public bool IsDead => currentHealth <= 0f;
+    public float Extra => ExtraHealth;
+    public float Total => maxHealth + ExtraHealth;
+    public bool IsDead => CurrentHealth <= 0f;
 
-    private void Start()
+    public override void Spawned()
     {
-        Init();
+        if (Object.HasStateAuthority)
+            Init();
     }
 
     public void TakeDamage(float amount)
     {
+        RPC_TakeDamage(amount);
+    }
+
+    [Rpc(RpcSources.All, RpcTargets.StateAuthority)]
+    private void RPC_TakeDamage(float amount)
+    {
         if (IsDead) return;
 
-        float extraDamage = Mathf.Min(amount, extraHealth);
-        extraHealth -= extraDamage;
+        float extraDamage = Mathf.Min(amount, ExtraHealth);
+        ExtraHealth -= extraDamage;
         float remaining = amount - extraDamage;
-        currentHealth = Mathf.Max(0f, currentHealth - remaining);
-        OnHealthChanged();
+        CurrentHealth = Mathf.Max(0f, CurrentHealth - remaining);
 
-        if (currentHealth == 0f)
+        if (CurrentHealth == 0f)
             EventBus<PlayerDiedEvent>.Raise(new PlayerDiedEvent());
     }
 
     public void Heal(float amount)
     {
-        if (IsDead) return;
+        RPC_Heal(amount);
+    }
 
-        currentHealth = Mathf.Min(maxHealth, currentHealth + amount);
-        OnHealthChanged();
+    [Rpc(RpcSources.All, RpcTargets.StateAuthority)]
+    private void RPC_Heal(float amount)
+    {
+        if (IsDead) return;
+        CurrentHealth = Mathf.Min(maxHealth, CurrentHealth + amount);
     }
 
     public void SetExtraHealth(float amount)
     {
-        extraHealth = amount;
-
-        OnHealthChanged();
+        RPC_SetExtraHealth(amount);
     }
 
-    private void OnHealthChanged()
+    [Rpc(RpcSources.All, RpcTargets.StateAuthority)]
+    private void RPC_SetExtraHealth(float amount)
     {
-        EventBus<HealthChangedEvent>.Raise(new HealthChangedEvent(this, currentHealth, extraHealth, maxHealth));
+        ExtraHealth = amount;
     }
 
     public void Init()
     {
-        currentHealth = maxHealth;
-        extraHealth = 0f;
+        CurrentHealth = maxHealth;
+        ExtraHealth = 0f;
+    }
 
-        OnHealthChanged();
+    private void OnHealthChangedRender()
+    {
+        EventBus<HealthChangedEvent>.Raise(new HealthChangedEvent(this, CurrentHealth, ExtraHealth, maxHealth));
     }
 }

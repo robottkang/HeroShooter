@@ -115,6 +115,7 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 257
   casingEjectPoint: {fileID: 6726877574889619912}
+  firePoint: {fileID: 5880820733989119668}
   muzzleFlashVFX: {fileID: 1061202606452549327}
   casingPrefab: {fileID: 8659440048784651059, guid: a7aba8d1675cc7342ad97982012e7fc4, type: 3}
   controller: {fileID: 22100000, guid: 1288116e5192cd84b808721e453eb7e7, type: 2}

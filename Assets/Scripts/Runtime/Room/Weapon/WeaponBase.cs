@@ -22,6 +22,7 @@ public abstract class WeaponBase : MonoBehaviour
 
     [Header("References")]
     [SerializeField] protected Transform casingEjectPoint;
+    [SerializeField] protected Transform firePoint;
     [SerializeField] protected ParticleSystem muzzleFlashVFX;
     [SerializeField] protected GameObject casingPrefab;
     [SerializeField] protected RuntimeAnimatorController controller;
@@ -80,10 +81,12 @@ public abstract class WeaponBase : MonoBehaviour
         EjectCasing();
         _animator.Play("Fire", 0, 0f);
         OnFired?.Invoke();
-
-        if (Physics.Raycast(targetCamera.transform.position, targetCamera.transform.forward, out RaycastHit hit, range, hitMask))
+        //var cameraBasedHit =
+        Physics.Raycast(targetCamera.transform.position, targetCamera.transform.forward, out RaycastHit hit, range, hitMask);
+        var muzzleBasedHit = Physics.Raycast(firePoint.position, hit.point, out RaycastHit actualHit, range, hitMask);
+        if (muzzleBasedHit)
         {
-            if (hit.collider.TryGetComponent<IDamageable>(out var target))
+            if (actualHit.collider.TryGetComponent<IDamageable>(out var target))
                 target.TakeDamage(damage);
         }
     }

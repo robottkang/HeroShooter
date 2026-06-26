@@ -18,8 +18,8 @@ public class HUDManager : MonoBehaviour
 
     public void Init(PlayerController playerController)
     {
-        _playerController = playerController;
         _playerController.OnAimingChanged += OnAimingChanged;
+        healthDisplay.Init(playerController.GetComponent<Health>());
     }
 
     private void OnAimingChanged(bool isAiming)

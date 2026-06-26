@@ -62,7 +62,7 @@ public class FPArmsAnimatorController : MonoBehaviour, IEventListener<WeaponChan
         bool aiming = playerController.IsAiming;
         Vector2 move = playerController.MoveInput;
 
-        _anim.SetBool(RunningId, playerController.IsSprinting && playerController.MoveInput.sqrMagnitude > 0.01f);
+        _anim.SetBool(RunningId, playerController.IsSprinting && move.sqrMagnitude > 0.01f);
         _anim.SetBool(AimId, aiming);
         _anim.SetFloat(MovementId, move.magnitude, 0.1f, Time.deltaTime);
         _anim.SetFloat(AimingId, aiming ? 1f : 0f, 0.15f, Time.deltaTime);
@@ -89,7 +89,7 @@ public class FPArmsAnimatorController : MonoBehaviour, IEventListener<WeaponChan
         ChangeAnimatorController(e.Weapon);
     }
 
-    private void PlayFireAnimation() => _anim.Play("Fire",   LayerOverlay, 0f);
+    private void PlayFireAnimation() => _anim.Play("Fire", LayerOverlay, 0f);
     private void PlayReloadAnimation() => _anim.Play("Reload", LayerActions, 0f);
 
     public void SetHolstered(bool holstered) => _anim.SetBool(HolsteredId, holstered);

@@ -1,30 +1,29 @@
+using Fusion;
 using UnityEngine;
 
-public class PlayerAnimatorController : MonoBehaviour
+public class PlayerAnimatorController : SimulationBehaviour
 {
     [Header("References")]
     [SerializeField] private PlayerController playerController;
     [SerializeField] private PlayerCameraController cameraHolder;
 
     private Animator _anim;
-    private CharacterController _cc;
     private Transform _spine;
 
-    private static readonly int VelocityXId   = Animator.StringToHash("VelocityX");
-    private static readonly int VelocityYId   = Animator.StringToHash("VelocityY");
+    private static readonly int VelocityXId = Animator.StringToHash("DirectionX");
+    private static readonly int VelocityYId = Animator.StringToHash("DirectionY");
+    private static readonly int MovementId = Animator.StringToHash("Movement");
     private static readonly int IsCrouchingId = Animator.StringToHash("IsCrouching");
-    private static readonly int IsGroundedId  = Animator.StringToHash("IsGrounded");
+    private static readonly int IsGroundedId = Animator.StringToHash("IsGrounded");
     private static readonly int JumpTriggerId = Animator.StringToHash("JumpTrigger");
-    private static readonly int IsDeadId      = Animator.StringToHash("IsDead");
-    private static readonly int IsAiming      = Animator.StringToHash("IsAiming");
+    private static readonly int IsDeadId = Animator.StringToHash("IsDead");
+    private static readonly int IsAimingId = Animator.StringToHash("IsAiming");
+    private static readonly int IsRuningId = Animator.StringToHash("IsRuning");
 
     private void Awake()
     {
         _anim = GetComponent<Animator>();
-        _cc = playerController.GetComponent<CharacterController>();
-
         playerController.OnJump += TriggerJump;
-
         _spine = _anim.GetBoneTransform(HumanBodyBones.Spine);
     }
 
@@ -34,17 +33,17 @@ public class PlayerAnimatorController : MonoBehaviour
             playerController.OnJump -= TriggerJump;
     }
 
-    private void Update()
+    public override void Render()
     {
-        Vector3 worldVel = _cc.velocity;
-        worldVel.y = 0f;
-        Vector3 localVel = playerController.transform.InverseTransformDirection(worldVel);
+        var moveDir = playerController.MoveInput.normalized;
 
-        _anim.SetFloat(VelocityXId, localVel.x, 0.1f, Time.deltaTime);
-        _anim.SetFloat(VelocityYId, localVel.z, 0.1f, Time.deltaTime);
-        _anim.SetBool(IsAiming, playerController.IsAiming);
+        _anim.SetFloat(VelocityXId, moveDir.x, 0.1f, Time.deltaTime);
+        _anim.SetFloat(VelocityYId, moveDir.y, 0.1f, Time.deltaTime);
+        _anim.SetFloat(MovementId, moveDir.magnitude, 0.1f, Time.deltaTime);
+        _anim.SetBool(IsAimingId, playerController.IsAiming);
         _anim.SetBool(IsCrouchingId, playerController.IsCrouching);
         _anim.SetBool(IsGroundedId, playerController.IsGrounded);
+        _anim.SetBool(IsRuningId, playerController.IsSprinting);
     }
 
     private void LateUpdate()

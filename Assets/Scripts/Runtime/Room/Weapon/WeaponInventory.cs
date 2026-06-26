@@ -6,7 +6,6 @@ using UnityEngine;
 
 public class WeaponInventory : MonoBehaviour
 {
-    [SerializeField] private Camera playerCamera;
     [SerializeField] private FPArmsAnimatorController armsAnimator;
 
     private readonly List<WeaponBase> _weapons = new();
@@ -97,7 +96,7 @@ public class WeaponInventory : MonoBehaviour
         {
             await UniTask.WaitUntil(() => holsterDone, cancellationToken: token);
         }
-        catch (OperationCanceledException e)
+        catch
         {
             armsAnimator.OnHolsterEnded -= OnHolsterDone;
             _isSwitching = false;

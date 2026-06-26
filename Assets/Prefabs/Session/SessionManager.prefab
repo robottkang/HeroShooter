@@ -45,8 +45,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GameManager
   playerPrefab: {fileID: 6538525284220438900, guid: 4869ebc3e62784e4f8c544691a13041a, type: 3}
-  localPlayerArmsPrefab: {fileID: 5416099430942533192, guid: 5ea7411e24ca2b44fb72e4a285482bd1, type: 3}
   spawnPoints:
   - {fileID: 0}
   - {fileID: 0}
   isDebug: 0
+  runnerPrefab: {fileID: 2695227051466852230, guid: 6b3f7f9256234bf488b842f16d8e1cea, type: 3}

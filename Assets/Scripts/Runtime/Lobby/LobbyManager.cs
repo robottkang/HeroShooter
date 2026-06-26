@@ -172,7 +172,7 @@ public class LobbyManager : NetworkBehaviour, INetworkRunnerCallbacks, IPlayerLe
             _lobbyRunner = Instantiate(runnerPrefab);
 
         _lobbyRunner.AddCallbacks(this);
-        var result = await _lobbyRunner.JoinSessionLobby(SessionLobby.Shared);
+        var result = await _lobbyRunner.JoinSessionLobby(SessionLobby.Shared).AsUniTask();
         if (result.Ok)
             connectingPanel.SetActive(false);
         else
@@ -197,7 +197,7 @@ public class LobbyManager : NetworkBehaviour, INetworkRunnerCallbacks, IPlayerLe
             SessionProperties = props,
             PlayerCount = 2,
             Scene = SceneRef.FromIndex(SceneManager.GetActiveScene().buildIndex),
-        });
+        }).AsUniTask();
 
         if (result.Ok)
             ShowPlayerReadyPanel();
@@ -214,7 +214,7 @@ public class LobbyManager : NetworkBehaviour, INetworkRunnerCallbacks, IPlayerLe
             GameMode = GameMode.Shared,
             SessionName = sessionName,
             Scene = SceneRef.FromIndex(SceneManager.GetActiveScene().buildIndex),
-        });
+        }).AsUniTask();
 
         if (result.Ok)
             ShowPlayerReadyPanel();
