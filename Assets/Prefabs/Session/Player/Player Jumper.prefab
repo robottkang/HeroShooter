@@ -2758,6 +2758,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 40b0e17b733eece48b9b56eed945cbe2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SuperJumpAbility
+  icon: {fileID: 21300000, guid: f99f3d244250fa3418349b56e60b19df, type: 3}
+  maxCharges: 1
   cooldown: 5
   abilityActiveDuration: 0.2
   jumpVelocity: 15
