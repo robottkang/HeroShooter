@@ -13,8 +13,8 @@ public class PlayerUISpawner : MonoBehaviour
 
     private void Start()
     {
-        var playerController = GetComponent<PlayerController>();
+        //var playerController = GetComponent<PlayerController>();
 
-        hudInstance.Init(playerController);
+        //hudInstance.Init(playerController);
     }
 }

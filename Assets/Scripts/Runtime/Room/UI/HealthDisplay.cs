@@ -17,8 +17,6 @@ public class HealthDisplay : MonoBehaviour, IEventListener<HealthChangedEvent>
 
     public void OnEvent(HealthChangedEvent e)
     {
-        
-        if (true)
         currentHealthText.text = Mathf.CeilToInt(e.Current + e.Extra).ToString("D3");
     }
 }
