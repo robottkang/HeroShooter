@@ -1,4 +1,5 @@
 using Fusion;
+using UnityEngine;
 
 // UI
 public struct HealthChangedEvent
@@ -49,6 +50,28 @@ public struct AimChangedEvent
     }
 
     public readonly bool IsAiming { get; }
+}
+
+public struct AbilityChangedEvent
+{
+    public AbilityChangedEvent(Sprite icon, int charges)
+    {
+        Icon = icon;
+        Charges = charges;
+    }
+
+    public readonly Sprite Icon { get; }
+    public readonly int Charges { get; }
+}
+
+public struct AbilityStateChangedEvent
+{
+    public AbilityStateChangedEvent(float charges)
+    {
+        Charges = charges;
+    }
+
+    public readonly float Charges { get; }
 }
 
 // Action
