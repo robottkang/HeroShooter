@@ -1,12 +1,13 @@
+using Fusion;
 using UnityEngine;
 
-public abstract class ItemBase : MonoBehaviour
+public abstract class ItemBase : NetworkBehaviour
 {
     [SerializeField] private float rotSpeed = 30f;
     [SerializeField] private float acquireTime = 5f;
 
     private IItemInteractor _candidate;
-    [SerializeField, Fusion.ReadOnly] private float _progress;
+    [SerializeField, ReadOnly] private float _progress;
 
     private void OnTriggerEnter(Collider other)
     {
@@ -59,8 +60,8 @@ public abstract class ItemBase : MonoBehaviour
         EventBus<ItemAcquireProgressEvent>.Raise(new ItemAcquireProgressEvent(_progress / acquireTime, true));
 
         if (_progress >= acquireTime)
-            Acquire((PlayerController)_candidate);
+            Acquire(_candidate);
     }
 
-    public abstract void Acquire(PlayerController player);
+    public abstract void Acquire(IItemInteractor player);
 }

@@ -66,12 +66,12 @@ public struct AbilityChangedEvent
 
 public struct AbilityStateChangedEvent
 {
-    public AbilityStateChangedEvent(float charges)
+    public AbilityStateChangedEvent(int charges)
     {
         Charges = charges;
     }
 
-    public readonly float Charges { get; }
+    public readonly int Charges { get; }
 }
 
 // Action

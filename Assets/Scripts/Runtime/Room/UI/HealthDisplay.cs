@@ -17,6 +17,7 @@ public class HealthDisplay : MonoBehaviour, IEventListener<HealthChangedEvent>
 
     public void OnEvent(HealthChangedEvent e)
     {
+        if (e.Source != Fusion.NetworkRunner.Instances[0].LocalPlayer) return;
         currentHealthText.text = Mathf.CeilToInt(e.Current + e.Extra).ToString("D3");
     }
 }

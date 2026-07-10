@@ -4,9 +4,10 @@ public class SuperArmorItem : ItemBase
 {
     [SerializeField] private float armorAmount = 100f;
 
-    public override void Acquire(PlayerController player)
+    public override void Acquire(IItemInteractor player)
     {
-        player.GetComponent<Health>().SetExtraHealth(armorAmount);
-        Destroy(gameObject);
+        player.Health.SetExtraHealth(armorAmount);
+
+        Runner.Despawn(Object);
     }
 }

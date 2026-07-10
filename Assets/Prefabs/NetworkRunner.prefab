@@ -11,6 +11,7 @@ GameObject:
   - component: {fileID: 4889904811173848673}
   - component: {fileID: 2695227051466852230}
   - component: {fileID: 1097863161161745810}
+  - component: {fileID: 5611130650268115807}
   m_Layer: 0
   m_Name: NetworkRunner
   m_TagString: Untagged
@@ -60,3 +61,15 @@ MonoBehaviour:
   IsSceneTakeOverEnabled: 1
   LogSceneLoadErrors: 1
   DestroySpawnedPrefabsOnSceneUnload: 1
+--- !u!114 &5611130650268115807
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5296069288505486343}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b8edbe7108d8a43ab838cf8b8d9453df, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Fusion.Unity::Fusion.RunnerEnableVisibility

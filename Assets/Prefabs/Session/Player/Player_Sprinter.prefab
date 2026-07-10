@@ -1,0 +1,88 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1001 &4902678335628250207
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: 262406151191328498, guid: 7ea24e92f91f51443b1a46e97d414a00, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 1.92007
+      objectReference: {fileID: 0}
+    - target: {fileID: 262406151191328498, guid: 7ea24e92f91f51443b1a46e97d414a00, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0.23154
+      objectReference: {fileID: 0}
+    - target: {fileID: 262406151191328498, guid: 7ea24e92f91f51443b1a46e97d414a00, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0.00749
+      objectReference: {fileID: 0}
+    - target: {fileID: 262406151191328498, guid: 7ea24e92f91f51443b1a46e97d414a00, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 262406151191328498, guid: 7ea24e92f91f51443b1a46e97d414a00, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 262406151191328498, guid: 7ea24e92f91f51443b1a46e97d414a00, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 262406151191328498, guid: 7ea24e92f91f51443b1a46e97d414a00, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 262406151191328498, guid: 7ea24e92f91f51443b1a46e97d414a00, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 262406151191328498, guid: 7ea24e92f91f51443b1a46e97d414a00, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 180
+      objectReference: {fileID: 0}
+    - target: {fileID: 262406151191328498, guid: 7ea24e92f91f51443b1a46e97d414a00, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1696541739869380896, guid: 7ea24e92f91f51443b1a46e97d414a00, type: 3}
+      propertyPath: SortKey
+      value: 1877864166
+      objectReference: {fileID: 0}
+    - target: {fileID: 7084819313630963044, guid: 7ea24e92f91f51443b1a46e97d414a00, type: 3}
+      propertyPath: m_Name
+      value: Player_Sprinter Variant
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 7084819313630963044, guid: 7ea24e92f91f51443b1a46e97d414a00, type: 3}
+      insertIndex: 4
+      addedObject: {fileID: 7949626204496153450}
+  m_SourcePrefab: {fileID: 100100000, guid: 7ea24e92f91f51443b1a46e97d414a00, type: 3}
+--- !u!1 &2763972501048191291 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 7084819313630963044, guid: 7ea24e92f91f51443b1a46e97d414a00, type: 3}
+  m_PrefabInstance: {fileID: 4902678335628250207}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &7949626204496153450
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2763972501048191291}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6b88c3d4f115bca48928ae17801ac507, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DashAbility
+  icon: {fileID: 21300000, guid: 0dd0c802ead44df499cf0b0c69e4a569, type: 3}
+  maxCharges: 1
+  cooldown: 5
+  abilityActiveDuration: 0.2
+  dashDistance: 8

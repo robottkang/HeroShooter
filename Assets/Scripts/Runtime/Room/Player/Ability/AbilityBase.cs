@@ -39,6 +39,7 @@ public abstract class AbilityBase : MonoBehaviour
         _charges -= 1;
         UseAbilityAsync(player).Forget();
         ActivateForDurationAsync(player).Forget();
+        EventBus<AbilityStateChangedEvent>.Raise(new AbilityStateChangedEvent(_charges));
         return true;
     }
 

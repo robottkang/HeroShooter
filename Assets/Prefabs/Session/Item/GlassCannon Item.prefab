@@ -11,6 +11,7 @@ GameObject:
   - component: {fileID: 7792482230439714724}
   - component: {fileID: 1500270954666219484}
   - component: {fileID: 7747833654584585945}
+  - component: {fileID: 4440666542642843830}
   m_Layer: 0
   m_Name: GlassCannon Item
   m_TagString: Untagged
@@ -73,6 +74,25 @@ MonoBehaviour:
   acquireTime: 5
   _progress: 0
   glassCannonPrefab: {fileID: 238728904510199731, guid: e9a0d137adc6f4840bf9c052ca765c4d, type: 3}
+--- !u!114 &4440666542642843830
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3020879912378475281}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: -1552182283, guid: e725a070cec140c4caffb81624c8c787, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Fusion.Runtime.dll::Fusion.NetworkObject
+  SortKey: 2028679059
+  ObjectInterest: 1
+  Flags: 262145
+  NestedObjects: []
+  NetworkedBehaviours:
+  - {fileID: 7747833654584585945}
+  ForceRemoteRenderTimeframe: 0
 --- !u!1001 &2983747666392103605
 PrefabInstance:
   m_ObjectHideFlags: 0

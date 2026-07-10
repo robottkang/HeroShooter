@@ -11,6 +11,7 @@ GameObject:
   - component: {fileID: 3463572919303236853}
   - component: {fileID: 7451997986035907081}
   - component: {fileID: 2312814975388469445}
+  - component: {fileID: 340674463231311412}
   m_Layer: 0
   m_Name: SuperArmor Item
   m_TagString: Untagged
@@ -73,6 +74,25 @@ MonoBehaviour:
   acquireTime: 5
   _progress: 0
   armorAmount: 200
+--- !u!114 &340674463231311412
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7711590721837624096}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: -1552182283, guid: e725a070cec140c4caffb81624c8c787, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Fusion.Runtime.dll::Fusion.NetworkObject
+  SortKey: 1887483526
+  ObjectInterest: 1
+  Flags: 262145
+  NestedObjects: []
+  NetworkedBehaviours:
+  - {fileID: 2312814975388469445}
+  ForceRemoteRenderTimeframe: 0
 --- !u!1001 &1511369420355836081
 PrefabInstance:
   m_ObjectHideFlags: 0

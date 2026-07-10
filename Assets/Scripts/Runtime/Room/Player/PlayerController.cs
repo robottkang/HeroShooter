@@ -32,27 +32,27 @@ public class PlayerController : NetworkBehaviour, IItemInteractor
     [SerializeField] private float standCameraY = 1.8f;
     [SerializeField] private float crouchCameraY = 0.8f;
 
-    [Header("Weapon")]
-    [SerializeField] private WeaponInventory weaponInventory;
-
-    [Header("Ability")]
-    [SerializeField] private AbilityBase ability;
+    [Header("Reference")]
+    [SerializeField] private Health health;
+    [SerializeField] private WeaponInventory inventory;
+    [SerializeField] private Highlighter highlighter;
 
     [Header("Look")]
     [SerializeField] private Vector2 mouseSensitivity = new Vector2(1f, 1f);
     [SerializeField] private float maxPitchAngle = 80f;
     [SerializeField] private PlayerCameraController cameraHolder;
 
-    [Networked] private Vector3 NetworkedPosition { get; set; }
-    [Networked] private Quaternion NetworkedRotation { get; set; }
-    [Networked] public float CamPitch { get; private set; }
-    [Networked] public NetworkBool IsCrouching { get; private set; }
-    [Networked] public NetworkBool IsGrounded { get; private set; }
-    [Networked] public Vector2 MoveInput { get; private set; }
-    [Networked] public NetworkBool IsSprinting { get; private set; }
-    [Networked] public NetworkBool IsAiming { get; private set; }
+    [Networked, HideInInspector] private Vector3 NetworkedPosition { get; set; }
+    [Networked, HideInInspector] private Quaternion NetworkedRotation { get; set; }
+    [Networked, HideInInspector] public float CamPitch { get; private set; }
+    [Networked, HideInInspector] public NetworkBool IsCrouching { get; private set; }
+    [Networked, HideInInspector] public NetworkBool IsGrounded { get; private set; }
+    [Networked, HideInInspector] public Vector2 MoveInput { get; private set; }
+    [Networked, HideInInspector] public NetworkBool IsSprinting { get; private set; }
+    [Networked, HideInInspector] public NetworkBool IsAiming { get; private set; }
 
     private CharacterController _cc;
+    private AbilityBase _ability;
 
     private StateMachine _moveFSM;
     private StateMachine _actionFSM;
@@ -72,11 +72,14 @@ public class PlayerController : NetworkBehaviour, IItemInteractor
     private bool _isNearItem;
 
     private bool IsActionBlocked => _isSprinting;
-    private WeaponBase EquippedWeapon => weaponInventory.CurrentWeapon;
+    private WeaponBase EquippedWeapon => inventory.CurrentWeapon;
 
     public event Action<bool> OnAimingChanged;
     public event Action OnJump;
     public CharacterController CC => _cc;
+    public Health Health => health;
+    public WeaponInventory Inventory => inventory;
+    public Highlighter Highlighter => highlighter;
     public bool IsAcquiring => _isAcquiring;
     public float WalkSpeed => walkSpeed;
     public float RunSpeed => runSpeed;
@@ -86,6 +89,7 @@ public class PlayerController : NetworkBehaviour, IItemInteractor
     public override void Spawned()
     {
         _cc = GetComponent<CharacterController>();
+        _ability = GetComponent<AbilityBase>();
 
         _cc.height = standHeight;
         _cc.center = Vector3.up * (standHeight / 2f);
@@ -179,7 +183,7 @@ public class PlayerController : NetworkBehaviour, IItemInteractor
     private void HandleMoveFSM()
     {
         // while ability that block movement is active
-        if (ability.IsActive && ability.BlockFlags.HasFlag(AbilityBlockFlags.Move))
+        if (_ability.IsActive && _ability.BlockFlags.HasFlag(AbilityBlockFlags.Move))
         {
             ChangeMoveState(MoveState.Idle);
             return;
@@ -212,13 +216,13 @@ public class PlayerController : NetworkBehaviour, IItemInteractor
 
     private void HandleActionFSM()
     {
-        if (IsActionBlocked || (ability.IsActive && ability.BlockFlags.HasFlag(AbilityBlockFlags.Action)))
+        if (IsActionBlocked || (_ability.IsActive && _ability.BlockFlags.HasFlag(AbilityBlockFlags.Action)))
         {
             ChangeActionState(ActionState.Idle);
             return;
         }
 
-        if (weaponInventory.IsSwitching)
+        if (inventory.IsSwitching)
         {
             ChangeActionState(ActionState.Switch);
             return;
@@ -386,9 +390,9 @@ public class PlayerController : NetworkBehaviour, IItemInteractor
     {
         float scroll = Mouse.current.scroll.ReadValue().y;
         if (scroll > 0f)
-            weaponInventory.EquipPrev();
+            inventory.EquipPrev();
         else if (scroll < 0f)
-            weaponInventory.EquipNext();
+            inventory.EquipNext();
     }
 
     private void HandleNumberKeySwitch()
@@ -398,7 +402,7 @@ public class PlayerController : NetworkBehaviour, IItemInteractor
         {
             if (kb[Key.Digit1 + i].wasPressedThisFrame)
             {
-                weaponInventory.Equip(i);
+                inventory.Equip(i);
                 break;
             }
         }
@@ -417,7 +421,7 @@ public class PlayerController : NetworkBehaviour, IItemInteractor
     private void HandleAbility()
     {
         if (_abilityAction.WasPressedThisFrame())
-            ability.TryUse(this);
+            _ability.TryUse(this);
     }
 
     public bool CanStandUp()

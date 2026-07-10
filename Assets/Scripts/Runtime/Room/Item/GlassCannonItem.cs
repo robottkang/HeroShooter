@@ -4,17 +4,17 @@ public class GlassCannonItem : ItemBase
 {
     [SerializeField] private WeaponBase glassCannonPrefab;
 
-    public override void Acquire(PlayerController player)
+    public override void Acquire(IItemInteractor player)
     {
-        var health = player.GetComponent<Health>();
+        var health = player.Health;
         health.SetExtraHealth(0f);
         health.TakeDamage(Mathf.Max(0f, health.Current - 1f));
 
-        var inventory = player.GetComponentInChildren<WeaponInventory>();
+        var inventory = player.Inventory;
         var weapon = Instantiate(glassCannonPrefab);
         inventory.AddWeapon(weapon);
         inventory.Equip(inventory.Weapons.Count - 1);
 
-        Destroy(gameObject);
+        Runner.Despawn(Object);
     }
 }

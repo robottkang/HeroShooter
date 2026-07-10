@@ -87,8 +87,7 @@ public abstract class WeaponBase : MonoBehaviour
         if (muzzleBasedHit)
         {
             Debug.Log($"{ hit.collider }, { actualHit.collider }");
-            if (actualHit.collider.TryGetComponent<IDamageable>(out var target))
-                target.TakeDamage(damage);
+            actualHit.collider.GetComponentInParent<IDamageable>()?.TakeDamage(damage);
         }
     }
 
