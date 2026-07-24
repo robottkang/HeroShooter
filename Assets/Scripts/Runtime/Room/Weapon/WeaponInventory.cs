@@ -1,10 +1,10 @@
 using Cysharp.Threading.Tasks;
-using System;
+using Fusion;
 using System.Collections.Generic;
 using System.Threading;
 using UnityEngine;
 
-public class WeaponInventory : MonoBehaviour
+public class WeaponInventory : NetworkBehaviour
 {
     [SerializeField] private FPArmsAnimatorController armsAnimator;
 
@@ -28,7 +28,10 @@ public class WeaponInventory : MonoBehaviour
                 child.gameObject.SetActive(false);
             }
         }
+    }
 
+    public override void Spawned()
+    {
         if (_weapons.Count > 0)
             EquipInternal(0);
     }
@@ -54,7 +57,7 @@ public class WeaponInventory : MonoBehaviour
         if (_weapons.Count == 0)
         {
             _currentIndex = -1;
-            EventBus<WeaponChangedEvent>.Raise(new WeaponChangedEvent(null));
+            EventBus<WeaponChangedEvent>.Raise(new WeaponChangedEvent(Object.InputAuthority, null));
             return;
         }
 
@@ -119,6 +122,7 @@ public class WeaponInventory : MonoBehaviour
 
         _currentIndex = index;
         _weapons[_currentIndex].gameObject.SetActive(true);
-        EventBus<WeaponChangedEvent>.Raise(new WeaponChangedEvent(CurrentWeapon));
+
+        EventBus<WeaponChangedEvent>.Raise(new WeaponChangedEvent(Object.InputAuthority, CurrentWeapon));
     }
 }

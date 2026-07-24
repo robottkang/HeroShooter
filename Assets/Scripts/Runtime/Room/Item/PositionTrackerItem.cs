@@ -12,6 +12,6 @@ public class PositionTrackerItem : ItemBase
             EventBus<PositionRevealedEvent>.Raise(new PositionRevealedEvent(h, trackingDuration));
         }
 
-        Runner.Despawn(Object);
+        RPC_Despawn();
     }
 }

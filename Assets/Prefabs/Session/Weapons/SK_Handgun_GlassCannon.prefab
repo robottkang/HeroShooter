@@ -309,6 +309,7 @@ GameObject:
   - component: {fileID: 6834049921006292709}
   - component: {fileID: 238728904510199731}
   - component: {fileID: 1980951809084380156}
+  - component: {fileID: -5579690180585105246}
   m_Layer: 0
   m_Name: SK_Handgun_GlassCannon
   m_TagString: Untagged
@@ -384,6 +385,7 @@ MonoBehaviour:
   firePoint: {fileID: 2566123792872320030}
   muzzleFlashVFX: {fileID: 6270654415017248808}
   casingPrefab: {fileID: 4116449858460989181, guid: 0c7b429fd8391af4195165678518566b, type: 3}
+  bulletHolePrefab: {fileID: 3836533337999345375, guid: 3a5ba144728ea1d4cb1597c2370b6c1c, type: 3}
   controller: {fileID: 22100000, guid: 257eac322a7afde43bfa9aa9e60baa84, type: 2}
   fireClip: {fileID: 8300000, guid: 0addcc409a57b4a43b86a3d2310ac5b4, type: 3}
   fireEmptyClip: {fileID: 8300000, guid: 0c187ee2790c74c4e9985aa1ee1a12d5, type: 3}
@@ -401,7 +403,7 @@ AudioSource:
   OutputAudioMixerGroup: {fileID: 6063010141522839549, guid: 3fcdb23bde063e94fa0b60ccf87604d6, type: 2}
   m_audioClip: {fileID: 0}
   m_Resource: {fileID: 0}
-  m_PlayOnAwake: 1
+  m_PlayOnAwake: 0
   m_Volume: 1
   m_Pitch: 1
   Loop: 0
@@ -486,6 +488,25 @@ AudioSource:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
+--- !u!114 &-5579690180585105246
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5087202038858861357}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: -1552182283, guid: e725a070cec140c4caffb81624c8c787, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Fusion.Runtime.dll::Fusion.NetworkObject
+  SortKey: 3228130195
+  ObjectInterest: 1
+  Flags: 262145
+  NestedObjects: []
+  NetworkedBehaviours:
+  - {fileID: 238728904510199731}
+  ForceRemoteRenderTimeframe: 0
 --- !u!1 &5678858241956072293
 GameObject:
   m_ObjectHideFlags: 0

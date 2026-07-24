@@ -48,13 +48,105 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 1277700684251376171, guid: 7ea24e92f91f51443b1a46e97d414a00, type: 3}
+      propertyPath: Flags
+      value: 262145
+      objectReference: {fileID: 0}
+    - target: {fileID: 1277700684251376171, guid: 7ea24e92f91f51443b1a46e97d414a00, type: 3}
+      propertyPath: SortKey
+      value: 1959834311
+      objectReference: {fileID: 0}
+    - target: {fileID: 1277700684251376171, guid: 7ea24e92f91f51443b1a46e97d414a00, type: 3}
+      propertyPath: NestedObjects.Array.size
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 1277700684251376171, guid: 7ea24e92f91f51443b1a46e97d414a00, type: 3}
+      propertyPath: 'NestedObjects.Array.data[0]'
+      value: 
+      objectReference: {fileID: 8613572160286201258}
+    - target: {fileID: 1277700684251376171, guid: 7ea24e92f91f51443b1a46e97d414a00, type: 3}
+      propertyPath: 'NestedObjects.Array.data[1]'
+      value: 
+      objectReference: {fileID: 8934088356046136727}
+    - target: {fileID: 1277700684251376171, guid: 7ea24e92f91f51443b1a46e97d414a00, type: 3}
+      propertyPath: NetworkedBehaviours.Array.size
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 1277700684251376171, guid: 7ea24e92f91f51443b1a46e97d414a00, type: 3}
+      propertyPath: 'NetworkedBehaviours.Array.data[0]'
+      value: 
+      objectReference: {fileID: 3409865017354317193}
+    - target: {fileID: 1277700684251376171, guid: 7ea24e92f91f51443b1a46e97d414a00, type: 3}
+      propertyPath: 'NetworkedBehaviours.Array.data[1]'
+      value: 
+      objectReference: {fileID: 5530511681961954711}
+    - target: {fileID: 1277700684251376171, guid: 7ea24e92f91f51443b1a46e97d414a00, type: 3}
+      propertyPath: 'NetworkedBehaviours.Array.data[2]'
+      value: 
+      objectReference: {fileID: 575083052730095209}
     - target: {fileID: 1696541739869380896, guid: 7ea24e92f91f51443b1a46e97d414a00, type: 3}
       propertyPath: SortKey
       value: 1877864166
       objectReference: {fileID: 0}
+    - target: {fileID: 1696541739869380896, guid: 7ea24e92f91f51443b1a46e97d414a00, type: 3}
+      propertyPath: NestedObjects.Array.size
+      value: 3
+      objectReference: {fileID: 0}
+    - target: {fileID: 1696541739869380896, guid: 7ea24e92f91f51443b1a46e97d414a00, type: 3}
+      propertyPath: 'NestedObjects.Array.data[0]'
+      value: 
+      objectReference: {fileID: 6175140942122821236}
+    - target: {fileID: 1696541739869380896, guid: 7ea24e92f91f51443b1a46e97d414a00, type: 3}
+      propertyPath: 'NestedObjects.Array.data[1]'
+      value: 
+      objectReference: {fileID: 8613572160286201258}
+    - target: {fileID: 1696541739869380896, guid: 7ea24e92f91f51443b1a46e97d414a00, type: 3}
+      propertyPath: 'NestedObjects.Array.data[2]'
+      value: 
+      objectReference: {fileID: 8934088356046136727}
+    - target: {fileID: 1696541739869380896, guid: 7ea24e92f91f51443b1a46e97d414a00, type: 3}
+      propertyPath: NetworkedBehaviours.Array.size
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 1696541739869380896, guid: 7ea24e92f91f51443b1a46e97d414a00, type: 3}
+      propertyPath: 'NetworkedBehaviours.Array.data[2]'
+      value: 
+      objectReference: {fileID: 3409865017354317193}
+    - target: {fileID: 3711038414803278325, guid: 7ea24e92f91f51443b1a46e97d414a00, type: 3}
+      propertyPath: Flags
+      value: 262145
+      objectReference: {fileID: 0}
+    - target: {fileID: 3711038414803278325, guid: 7ea24e92f91f51443b1a46e97d414a00, type: 3}
+      propertyPath: SortKey
+      value: 2800280644
+      objectReference: {fileID: 0}
+    - target: {fileID: 3711038414803278325, guid: 7ea24e92f91f51443b1a46e97d414a00, type: 3}
+      propertyPath: NetworkedBehaviours.Array.size
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 3711038414803278325, guid: 7ea24e92f91f51443b1a46e97d414a00, type: 3}
+      propertyPath: 'NetworkedBehaviours.Array.data[0]'
+      value: 
+      objectReference: {fileID: 5530511681961954711}
+    - target: {fileID: 4608745919590263240, guid: 7ea24e92f91f51443b1a46e97d414a00, type: 3}
+      propertyPath: Flags
+      value: 262145
+      objectReference: {fileID: 0}
+    - target: {fileID: 4608745919590263240, guid: 7ea24e92f91f51443b1a46e97d414a00, type: 3}
+      propertyPath: SortKey
+      value: 126642123
+      objectReference: {fileID: 0}
+    - target: {fileID: 4608745919590263240, guid: 7ea24e92f91f51443b1a46e97d414a00, type: 3}
+      propertyPath: NetworkedBehaviours.Array.size
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 4608745919590263240, guid: 7ea24e92f91f51443b1a46e97d414a00, type: 3}
+      propertyPath: 'NetworkedBehaviours.Array.data[0]'
+      value: 
+      objectReference: {fileID: 575083052730095209}
     - target: {fileID: 7084819313630963044, guid: 7ea24e92f91f51443b1a46e97d414a00, type: 3}
       propertyPath: m_Name
-      value: Player_Sprinter Variant
+      value: Player_Sprinter
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -64,6 +156,17 @@ PrefabInstance:
       insertIndex: 4
       addedObject: {fileID: 7949626204496153450}
   m_SourcePrefab: {fileID: 100100000, guid: 7ea24e92f91f51443b1a46e97d414a00, type: 3}
+--- !u!114 &575083052730095209 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 4896209965870684726, guid: 7ea24e92f91f51443b1a46e97d414a00, type: 3}
+  m_PrefabInstance: {fileID: 4902678335628250207}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: dea88ed20f4a8244a8de24fad1ef4082, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Rifle
 --- !u!1 &2763972501048191291 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 7084819313630963044, guid: 7ea24e92f91f51443b1a46e97d414a00, type: 3}
@@ -81,8 +184,63 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6b88c3d4f115bca48928ae17801ac507, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DashAbility
-  icon: {fileID: 21300000, guid: 0dd0c802ead44df499cf0b0c69e4a569, type: 3}
+  icon: {fileID: 21300000, guid: e6cb1a66600f59a42be6a2ce0b23befc, type: 3}
   maxCharges: 1
   cooldown: 5
   abilityActiveDuration: 0.2
   dashDistance: 8
+--- !u!114 &3409865017354317193 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 7735928321054040534, guid: 7ea24e92f91f51443b1a46e97d414a00, type: 3}
+  m_PrefabInstance: {fileID: 4902678335628250207}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 13dc7fae12dc07941a86fbdcacdc1da1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::WeaponInventory
+--- !u!114 &5530511681961954711 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 633209752102207944, guid: 7ea24e92f91f51443b1a46e97d414a00, type: 3}
+  m_PrefabInstance: {fileID: 4902678335628250207}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 133e283a766200d4499e12b40c9514dc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Pistol
+--- !u!114 &6175140942122821236 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 1277700684251376171, guid: 7ea24e92f91f51443b1a46e97d414a00, type: 3}
+  m_PrefabInstance: {fileID: 4902678335628250207}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: -1552182283, guid: e725a070cec140c4caffb81624c8c787, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Fusion.Runtime.dll::Fusion.NetworkObject
+--- !u!114 &8613572160286201258 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 3711038414803278325, guid: 7ea24e92f91f51443b1a46e97d414a00, type: 3}
+  m_PrefabInstance: {fileID: 4902678335628250207}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: -1552182283, guid: e725a070cec140c4caffb81624c8c787, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Fusion.Runtime.dll::Fusion.NetworkObject
+--- !u!114 &8934088356046136727 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 4608745919590263240, guid: 7ea24e92f91f51443b1a46e97d414a00, type: 3}
+  m_PrefabInstance: {fileID: 4902678335628250207}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: -1552182283, guid: e725a070cec140c4caffb81624c8c787, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Fusion.Runtime.dll::Fusion.NetworkObject

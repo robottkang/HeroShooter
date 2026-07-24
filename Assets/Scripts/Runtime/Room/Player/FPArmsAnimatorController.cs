@@ -47,11 +47,6 @@ public class FPArmsAnimatorController : MonoBehaviour, IEventListener<WeaponChan
         _anim = GetComponent<Animator>();
     }
 
-    private void Start()
-    {
-        ChangeAnimatorController(weaponInventory.CurrentWeapon);
-    }
-
     private void OnDestroy()
     {
         UnsubscribeWeapon(_currentWeapon);
@@ -73,19 +68,21 @@ public class FPArmsAnimatorController : MonoBehaviour, IEventListener<WeaponChan
         UnsubscribeWeapon(_currentWeapon);
         _currentWeapon = weapon;
         _anim.runtimeAnimatorController = weapon.Controller;
-        weapon.OnFired += PlayFireAnimation;
-        weapon.OnReloadStarted += PlayReloadAnimation;
+        weapon.OnFire += PlayFireAnimation;
+        weapon.OnReload += PlayReloadAnimation;
     }
 
     private void UnsubscribeWeapon(WeaponBase weapon)
     {
         if (weapon == null) return;
-        weapon.OnFired -= PlayFireAnimation;
-        weapon.OnReloadStarted -= PlayReloadAnimation;
+        weapon.OnFire -= PlayFireAnimation;
+        weapon.OnReload -= PlayReloadAnimation;
     }
 
     public void OnEvent(WeaponChangedEvent e)
     {
+        if (e.Source != Fusion.NetworkRunner.Instances[0].LocalPlayer) return;
+
         ChangeAnimatorController(e.Weapon);
     }
 

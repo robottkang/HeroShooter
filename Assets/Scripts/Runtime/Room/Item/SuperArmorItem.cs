@@ -8,6 +8,6 @@ public class SuperArmorItem : ItemBase
     {
         player.Health.SetExtraHealth(armorAmount);
 
-        Runner.Despawn(Object);
+        RPC_Despawn();
     }
 }

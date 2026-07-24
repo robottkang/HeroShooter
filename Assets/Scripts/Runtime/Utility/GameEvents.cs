@@ -32,13 +32,13 @@ public struct AmmoChangedEvent
 
 public struct WeaponChangedEvent
 {
-    public WeaponChangedEvent(WeaponBase weapon)
+    public WeaponChangedEvent(PlayerRef source, WeaponBase weapon)
     {
-        //Player = target;
+        Source = source;
         Weapon = weapon;
     }
 
-    //public readonly PlayerRef Player { get; }
+    public readonly PlayerRef Source { get; }
     public readonly WeaponBase Weapon { get; }
 }
 

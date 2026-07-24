@@ -1,9 +1,11 @@
 using Cysharp.Threading.Tasks;
+using Fusion;
 using System;
 using System.Threading;
 using UnityEngine;
+using UnityEngine.Pool;
 
-public abstract class WeaponBase : MonoBehaviour
+public abstract class WeaponBase : NetworkBehaviour
 {
     [Header("Info")]
     [SerializeField] private Sprite bodySprite;
@@ -25,6 +27,7 @@ public abstract class WeaponBase : MonoBehaviour
     [SerializeField] protected Transform firePoint;
     [SerializeField] protected ParticleSystem muzzleFlashVFX;
     [SerializeField] protected GameObject casingPrefab;
+    [SerializeField] protected GameObject bulletHolePrefab;
     [SerializeField] protected RuntimeAnimatorController controller;
 
     [Header("Audio")]
@@ -40,6 +43,7 @@ public abstract class WeaponBase : MonoBehaviour
     protected bool _isReloading;
     protected float _lastFireTime;
     private CancellationTokenSource _reloadCts;
+    private ObjectPool<GameObject> _bulletHolePool;
 
     public Sprite BodySprite => bodySprite;
     public Sprite MagazineSprite => magazineSprite;
@@ -50,14 +54,23 @@ public abstract class WeaponBase : MonoBehaviour
     public bool IsAutomatic => isAutomatic;
     public RuntimeAnimatorController Controller => controller;
 
-    public event Action OnFired;
-    public event Action OnReloadStarted;
+    public event Action OnFire;
+    public event Action OnReload;
 
     protected virtual void Awake()
     {
         _audioSource = GetComponent<AudioSource>();
         _animator = GetComponent<Animator>();
         _currentAmmo = magazineSize;
+        _bulletHolePool = new ObjectPool<GameObject>(() =>
+        {
+            var obj = Instantiate(bulletHolePrefab);
+            obj.SetActive(false);
+            return obj;
+        },
+        obj => obj.SetActive(true),
+        obj => obj.SetActive(false),
+        obj => Destroy(obj), true, 20, 100);
     }
 
     public virtual void Fire(Camera targetCamera)
@@ -80,13 +93,16 @@ public abstract class WeaponBase : MonoBehaviour
         _audioSource.PlayOneShot(fireClip);
         EjectCasing();
         _animator.Play("Fire", 0, 0f);
-        OnFired?.Invoke();
+        OnFire?.Invoke();
         //var cameraBasedHit =
         Physics.Raycast(targetCamera.transform.position, targetCamera.transform.forward, out RaycastHit hit, range, hitMask);
         var muzzleBasedHit = Physics.Raycast(firePoint.position, (hit.point - firePoint.position).normalized, out RaycastHit actualHit, range, hitMask);
         if (muzzleBasedHit)
         {
-            Debug.Log($"{ hit.collider }, { actualHit.collider }");
+            Debug.Log($"{hit.collider}, {actualHit.collider}");
+            if (actualHit.collider.gameObject.layer == LayerMask.NameToLayer("Default"))
+                SpawnBulletHole(actualHit);
+
             actualHit.collider.GetComponentInParent<IDamageable>()?.TakeDamage(damage);
         }
     }
@@ -129,7 +145,7 @@ public abstract class WeaponBase : MonoBehaviour
         _reloadCts = new CancellationTokenSource();
 
         _animator.Play("Reload", 0, 0f);
-        OnReloadStarted?.Invoke();
+        OnReload?.Invoke();
         if (_currentAmmo != 0)
             _audioSource.PlayOneShot(reloadClip);
         else
@@ -159,5 +175,23 @@ public abstract class WeaponBase : MonoBehaviour
         muzzleFlashVFX.Play();
         await UniTask.WaitForSeconds(delay);
         muzzleFlashVFX.Stop();
+    }
+
+    //[Rpc(RpcSources.All, RpcTargets.All)]
+    private void SpawnBulletHole(RaycastHit hit)
+    {
+        Quaternion rotation = Quaternion.LookRotation(-hit.normal);
+        Vector3 position = hit.point + hit.normal * 0.001f;
+
+        var hole = _bulletHolePool.Get();
+        hole.transform.SetLocalPositionAndRotation(position, rotation);
+
+        ReturnBulletHoleToPoolAsync(hole, 10f).Forget();
+    }
+
+    private async UniTaskVoid ReturnBulletHoleToPoolAsync(GameObject hole, float delay)
+    {
+        await UniTask.Delay(TimeSpan.FromSeconds(delay));
+        _bulletHolePool.Release(hole);
     }
 }

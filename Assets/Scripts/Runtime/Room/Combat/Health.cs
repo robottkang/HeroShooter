@@ -39,7 +39,7 @@ public class Health : NetworkBehaviour, IDamageable
         CurrentHealth = Mathf.Max(0f, CurrentHealth - remaining);
 
         if (CurrentHealth == 0f)
-            EventBus<PlayerDiedEvent>.Raise(new PlayerDiedEvent());
+            EventBus<PlayerDiedEvent>.Raise(new PlayerDiedEvent(Object.InputAuthority));
     }
 
     public void Heal(float amount)
@@ -73,6 +73,6 @@ public class Health : NetworkBehaviour, IDamageable
 
     private void OnHealthChangedRender()
     {
-        EventBus<HealthChangedEvent>.Raise(new HealthChangedEvent(Runner.LocalPlayer, CurrentHealth, ExtraHealth, maxHealth));
+        EventBus<HealthChangedEvent>.Raise(new HealthChangedEvent(Object.InputAuthority, CurrentHealth, ExtraHealth, maxHealth));
     }
 }

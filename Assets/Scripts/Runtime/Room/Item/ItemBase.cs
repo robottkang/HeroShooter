@@ -64,4 +64,10 @@ public abstract class ItemBase : NetworkBehaviour
     }
 
     public abstract void Acquire(IItemInteractor player);
+
+    [Rpc(RpcSources.All, RpcTargets.StateAuthority)]
+    protected void RPC_Despawn()
+    {
+        Runner.Despawn(Object);
+    }
 }

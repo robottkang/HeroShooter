@@ -85,7 +85,10 @@ public class SessionManager : SimulationBehaviour
             return;
         }
 
-        await runner.LoadScene(SceneRef.FromIndex(SceneManager.GetActiveScene().buildIndex)).ToUniTask();
+        if (runner.IsSharedModeMasterClient)
+            await runner.LoadScene(SceneRef.FromIndex(SceneManager.GetActiveScene().buildIndex)).ToUniTask();
+        else
+            SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
     }
 #endif
 }

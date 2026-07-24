@@ -15,6 +15,6 @@ public class GlassCannonItem : ItemBase
         inventory.AddWeapon(weapon);
         inventory.Equip(inventory.Weapons.Count - 1);
 
-        Runner.Despawn(Object);
+        RPC_Despawn();
     }
 }
