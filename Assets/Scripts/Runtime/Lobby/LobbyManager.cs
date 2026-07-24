@@ -167,7 +167,7 @@ public class LobbyManager : NetworkBehaviour, INetworkRunnerCallbacks, IPlayerLe
 
     private async UniTask ConnectToLobby()
     {
-        _lobbyRunner = FindFirstObjectByType<NetworkRunner>();
+        _lobbyRunner = FindAnyObjectByType<NetworkRunner>();
         if (_lobbyRunner == null)
             _lobbyRunner = Instantiate(runnerPrefab);
 
@@ -267,8 +267,6 @@ public class LobbyManager : NetworkBehaviour, INetworkRunnerCallbacks, IPlayerLe
     public void OnShutdown(NetworkRunner runner, ShutdownReason shutdownReason) { }
     public void OnConnectRequest(NetworkRunner runner, NetworkRunnerCallbackArgs.ConnectRequest request, byte[] token) { }
     public void OnConnectFailed(NetworkRunner runner, NetAddress remoteAddress, NetConnectFailedReason reason) { }
-    public void OnUserSimulationMessage(NetworkRunner runner, SimulationMessagePtr message) { }
-    public void OnReliableDataReceived(NetworkRunner runner, PlayerRef player, ReliableKey key, System.ArraySegment<byte> data) { }
     public void OnReliableDataProgress(NetworkRunner runner, PlayerRef player, ReliableKey key, float progress) { }
     public void OnInput(NetworkRunner runner, NetworkInput input) { }
     public void OnInputMissing(NetworkRunner runner, PlayerRef player, NetworkInput input) { }
@@ -276,4 +274,5 @@ public class LobbyManager : NetworkBehaviour, INetworkRunnerCallbacks, IPlayerLe
     public void OnHostMigration(NetworkRunner runner, HostMigrationToken hostMigrationToken) { }
     public void OnSceneLoadDone(NetworkRunner runner) { }
     public void OnSceneLoadStart(NetworkRunner runner) { }
+    public void OnReliableDataReceived(NetworkRunner runner, PlayerRef player, ReliableKey key, ReadOnlySpan<byte> data) { }
 }

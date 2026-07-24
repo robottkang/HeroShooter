@@ -50,7 +50,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1277700684251376171, guid: 7ea24e92f91f51443b1a46e97d414a00, type: 3}
       propertyPath: Flags
-      value: 262145
+      value: 262146
       objectReference: {fileID: 0}
     - target: {fileID: 1277700684251376171, guid: 7ea24e92f91f51443b1a46e97d414a00, type: 3}
       propertyPath: SortKey
@@ -85,6 +85,10 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 5341030003758478735}
     - target: {fileID: 1696541739869380896, guid: 7ea24e92f91f51443b1a46e97d414a00, type: 3}
+      propertyPath: Flags
+      value: 262146
+      objectReference: {fileID: 0}
+    - target: {fileID: 1696541739869380896, guid: 7ea24e92f91f51443b1a46e97d414a00, type: 3}
       propertyPath: SortKey
       value: 187651592
       objectReference: {fileID: 0}
@@ -118,7 +122,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4608745919590263240, guid: 7ea24e92f91f51443b1a46e97d414a00, type: 3}
       propertyPath: Flags
-      value: 262145
+      value: 262146
       objectReference: {fileID: 0}
     - target: {fileID: 4608745919590263240, guid: 7ea24e92f91f51443b1a46e97d414a00, type: 3}
       propertyPath: SortKey

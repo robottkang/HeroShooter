@@ -210,6 +210,7 @@ SkinnedMeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+  m_MaskInteraction: 0
   serializedVersion: 2
   m_Quality: 0
   m_UpdateWhenOffscreen: 0
@@ -501,8 +502,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Fusion.Runtime.dll::Fusion.NetworkObject
   SortKey: 3228130195
-  ObjectInterest: 1
-  Flags: 262145
+  SendPriority: 1
+  EnableInterpolation: 1
+  Flags: 262146
   NestedObjects: []
   NetworkedBehaviours:
   - {fileID: 238728904510199731}

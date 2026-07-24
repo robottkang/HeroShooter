@@ -1562,6 +1562,7 @@ SkinnedMeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+  m_MaskInteraction: 0
   serializedVersion: 2
   m_Quality: 0
   m_UpdateWhenOffscreen: 1
@@ -2342,14 +2343,14 @@ MonoBehaviour:
   cameraHolder: {fileID: 299950310264302288}
   _CamPitch: 0
   _IsCrouching:
-    _value: 0
+    RawValue: 0
   _IsGrounded:
-    _value: 0
+    RawValue: 0
   _MoveInput: {x: 0, y: 0}
   _IsSprinting:
-    _value: 0
+    RawValue: 0
   _IsAiming:
-    _value: 0
+    RawValue: 0
 --- !u!114 &6419714108545296938
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2363,8 +2364,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Health
   maxHealth: 100
-  _CurrentHealth: 0
-  _ExtraHealth: 0
 --- !u!114 &1696541739869380896
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2378,8 +2377,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Fusion.Runtime.dll::Fusion.NetworkObject
   SortKey: 2080659821
-  ObjectInterest: 1
-  Flags: 262145
+  SendPriority: 1
+  EnableInterpolation: 1
+  Flags: 262146
   NestedObjects:
   - {fileID: 1277700684251376171}
   - {fileID: 3711038414803278325}
@@ -4002,8 +4002,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Fusion.Runtime.dll::Fusion.NetworkObject
   SortKey: 2162629966
-  ObjectInterest: 1
-  Flags: 262145
+  SendPriority: 1
+  EnableInterpolation: 1
+  Flags: 262146
   NestedObjects:
   - {fileID: 3711038414803278325}
   - {fileID: 4608745919590263240}

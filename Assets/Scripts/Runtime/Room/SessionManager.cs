@@ -24,7 +24,7 @@ public class SessionManager : SimulationBehaviour
         Camera.main.gameObject.SetActive(false);
 
 #if UNITY_EDITOR
-        if (isDebug && FindFirstObjectByType<NetworkRunner>() == null)
+        if (isDebug && FindAnyObjectByType<NetworkRunner>() == null)
         {
             StartDebugSession().Forget();
             return;

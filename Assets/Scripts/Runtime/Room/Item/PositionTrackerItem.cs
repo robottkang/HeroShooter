@@ -6,7 +6,7 @@ public class PositionTrackerItem : ItemBase
 
     public override void Acquire(IItemInteractor player)
     {
-        foreach (var h in FindObjectsByType<Highlighter>(FindObjectsSortMode.None))
+        foreach (var h in FindObjectsByType<Highlighter>())
         {
             if (player.Highlighter == h) continue;
             EventBus<PositionRevealedEvent>.Raise(new PositionRevealedEvent(h, trackingDuration));

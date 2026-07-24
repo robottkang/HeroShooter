@@ -5,10 +5,10 @@ public class Health : NetworkBehaviour, IDamageable
 {
     [SerializeField] private float maxHealth = 100f;
 
-    [SerializeField, Networked, OnChangedRender(nameof(OnHealthChangedRender))]
+    [Networked, OnChangedRender(nameof(OnHealthChangedRender))]
     private float CurrentHealth { get; set; }
 
-    [SerializeField, Networked, OnChangedRender(nameof(OnHealthChangedRender))]
+    [Networked, OnChangedRender(nameof(OnHealthChangedRender))]
     private float ExtraHealth { get; set; }
 
     public float Current => CurrentHealth;
