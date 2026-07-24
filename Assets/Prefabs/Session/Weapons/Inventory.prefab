@@ -46,8 +46,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 13dc7fae12dc07941a86fbdcacdc1da1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::WeaponInventory
-  playerCamera: {fileID: 0}
-  switchCooldown: 0.1
+  armsAnimator: {fileID: 0}
 --- !u!1001 &1767487517773184595
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -56,6 +55,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 4246605869859019545}
     m_Modifications:
+    - target: {fileID: -240414673955046150, guid: 0393be59aad33794ab46dbf8bd4674c0, type: 3}
+      propertyPath: SortKey
+      value: 2923457896
+      objectReference: {fileID: 0}
     - target: {fileID: 612843162308975235, guid: 0393be59aad33794ab46dbf8bd4674c0, type: 3}
       propertyPath: m_Name
       value: SK_AR_01
@@ -122,6 +125,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 4246605869859019545}
     m_Modifications:
+    - target: {fileID: -5180828967224815730, guid: 91f3a3b08bc49c64c9519c73576d86ae, type: 3}
+      propertyPath: SortKey
+      value: 459361731
+      objectReference: {fileID: 0}
     - target: {fileID: 4914638236031656460, guid: 91f3a3b08bc49c64c9519c73576d86ae, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0

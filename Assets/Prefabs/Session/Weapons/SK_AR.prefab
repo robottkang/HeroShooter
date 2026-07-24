@@ -43,7 +43,6 @@ GameObject:
   - component: {fileID: 6412982735430734924}
   - component: {fileID: 49179899039600388}
   - component: {fileID: 2662143975919393152}
-  - component: {fileID: -240414673955046150}
   m_Layer: 0
   m_Name: SK_AR
   m_TagString: Untagged
@@ -222,26 +221,6 @@ AudioSource:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
---- !u!114 &-240414673955046150
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 612843162308975235}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: -1552182283, guid: e725a070cec140c4caffb81624c8c787, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Fusion.Runtime.dll::Fusion.NetworkObject
-  SortKey: 3392465171
-  SendPriority: 1
-  EnableInterpolation: 1
-  Flags: 262146
-  NestedObjects: []
-  NetworkedBehaviours:
-  - {fileID: 49179899039600388}
-  ForceRemoteRenderTimeframe: 0
 --- !u!1 &1069997077506839463
 GameObject:
   m_ObjectHideFlags: 0
