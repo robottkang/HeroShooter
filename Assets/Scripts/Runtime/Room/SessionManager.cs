@@ -52,7 +52,7 @@ public class SessionManager : SimulationBehaviour
         //Instantiate(localPlayerArmsPrefab, spawnPoint.position, spawnPoint.rotation);
         Runner.SpawnAsync(playerPrefab, spawnPoint.position, spawnPoint.rotation, Runner.LocalPlayer);
     }
-#if UNITY_EDITOR
+
     public void RegisterOnRunner()
     {
         var runner = NetworkRunner.GetRunnerForGameObject(gameObject);
@@ -61,6 +61,7 @@ public class SessionManager : SimulationBehaviour
             runner.AddGlobal(this);
     }
 
+#if UNITY_EDITOR
     private async UniTask StartDebugSession()
     {
         var runner = Instantiate(runnerPrefab);
