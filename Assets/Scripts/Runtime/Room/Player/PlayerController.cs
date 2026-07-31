@@ -54,8 +54,8 @@ public class PlayerController : NetworkBehaviour, IItemInteractor
     private CharacterController _cc;
     private AbilityBase _ability;
 
-    private StateMachine _moveFSM;
-    private StateMachine _actionFSM;
+    private StateMachine<PlayerController> _moveFSM;
+    private StateMachine<PlayerController> _actionFSM;
     private MoveState _currentMoveState;
     private ActionState _currentActionState;
 
@@ -96,8 +96,8 @@ public class PlayerController : NetworkBehaviour, IItemInteractor
 
         if (Object.HasInputAuthority)
         {
-            _moveFSM = new StateMachine(new MoveIdleState(this));
-            _actionFSM = new StateMachine(new ActionIdleState(this));
+            _moveFSM = new StateMachine<PlayerController>(this, new MoveIdleState());
+            _actionFSM = new StateMachine<PlayerController>(this, new ActionIdleState());
 
             var playerMap = actionAsset.FindActionMap("Player", true);
             _moveAction = playerMap.FindAction("Move", true);
@@ -189,7 +189,7 @@ public class PlayerController : NetworkBehaviour, IItemInteractor
             return;
         }
 
-        // while crouch key(LCtrl) is pressed
+        // while crouch key(LCtrl) is pressed or player cannot stand up due to obstacle
         if (_crouchAction.IsPressed() || !CanStandUp())
         {
             ChangeMoveState(MoveState.Crouch);
@@ -216,30 +216,35 @@ public class PlayerController : NetworkBehaviour, IItemInteractor
 
     private void HandleActionFSM()
     {
+        // while ability that block action is active
         if (IsActionBlocked || (_ability.IsActive && _ability.BlockFlags.HasFlag(AbilityBlockFlags.Action)))
         {
             ChangeActionState(ActionState.Idle);
             return;
         }
 
+        // while weapon is switching
         if (inventory.IsSwitching)
         {
             ChangeActionState(ActionState.Switch);
             return;
         }
 
+        // while weapon is reloading or reload key(R) is pressed
         if (EquippedWeapon.IsReloading || _reloadAction.WasPressedThisFrame())
         {
             ChangeActionState(ActionState.Reload);
             return;
         }
 
+        // while player acquire key(E) is pressed in range of item
         if (_isNearItem && _acquireAction.IsPressed())
         {
             ChangeActionState(ActionState.Acquire);
             return;
         }
 
+        // while attack key(LMB) is pressed and weapon has ammo
         bool shouldFire = (EquippedWeapon.IsAutomatic && EquippedWeapon.CurrentAmmo > 0) ?
             _attackAction.IsPressed() : _attackAction.WasPressedThisFrame();
         if (shouldFire)
@@ -259,16 +264,16 @@ public class PlayerController : NetworkBehaviour, IItemInteractor
         switch (newState)
         {
             case MoveState.Idle:
-                _moveFSM.ChangeState(new MoveIdleState(this));
+                _moveFSM.ChangeState(new MoveIdleState());
                 break;
             case MoveState.Walk:
-                _moveFSM.ChangeState(new MoveWalkState(this));
+                _moveFSM.ChangeState(new MoveWalkState());
                 break;
             case MoveState.Sprint:
-                _moveFSM.ChangeState(new MoveSprintState(this));
+                _moveFSM.ChangeState(new MoveSprintState());
                 break;
             case MoveState.Crouch:
-                _moveFSM.ChangeState(new MoveCrouchState(this));
+                _moveFSM.ChangeState(new MoveCrouchState());
                 break;
             default:
                 throw new NotImplementedException();
@@ -283,19 +288,19 @@ public class PlayerController : NetworkBehaviour, IItemInteractor
         switch (newState)
         {
             case ActionState.Idle:
-                _actionFSM.ChangeState(new ActionIdleState(this));
+                _actionFSM.ChangeState(new ActionIdleState());
                 break;
             case ActionState.Attack:
-                _actionFSM.ChangeState(new ActionAttackState(this));
+                _actionFSM.ChangeState(new ActionAttackState());
                 break;
             case ActionState.Reload:
-                _actionFSM.ChangeState(new ActionReloadState(this));
+                _actionFSM.ChangeState(new ActionReloadState());
                 break;
             case ActionState.Switch:
-                _actionFSM.ChangeState(new ActionSwitchState(this));
+                _actionFSM.ChangeState(new ActionSwitchState());
                 break;
             case ActionState.Acquire:
-                _actionFSM.ChangeState(new ActionAcquireState(this));
+                _actionFSM.ChangeState(new ActionAcquireState());
                 break;
             default:
                 throw new NotImplementedException();

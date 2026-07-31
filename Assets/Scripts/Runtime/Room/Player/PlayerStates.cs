@@ -1,134 +1,116 @@
 using UnityEngine;
 
-public class MoveIdleState : BaseState
+public class MoveIdleState : IBaseState<PlayerController>
 {
-    public MoveIdleState(PlayerController player) : base(player) { }
+    public void OnStateEnter(PlayerController player) { }
 
-    public override void OnStateEnter() { }
+    public void OnStateExit(PlayerController player) { }
 
-    public override void OnStateExit() { }
-
-    public override void OnStateUpdate()
+    public void OnStateUpdate(PlayerController player)
     {
-        _player.HandleMovement();
-        _player.HandleCrouchTransition();
+        player.HandleMovement();
+        player.HandleCrouchTransition();
     }
 }
 
-public class MoveWalkState : BaseState
+public class MoveWalkState : IBaseState<PlayerController>
 {
-    public MoveWalkState(PlayerController player) : base(player) { }
+    public void OnStateEnter(PlayerController player) { }
 
-    public override void OnStateEnter() { }
+    public void OnStateExit(PlayerController player) { }
 
-    public override void OnStateExit() { }
-
-    public override void OnStateUpdate()
+    public void OnStateUpdate(PlayerController player)
     {
-        _player.HandleMovement();
-        _player.HandleCrouchTransition();
+        player.HandleMovement();
+        player.HandleCrouchTransition();
     }
 }
 
-public class MoveSprintState : BaseState
+public class MoveSprintState : IBaseState<PlayerController>
 {
-    public MoveSprintState(PlayerController player) : base(player) { }
+    public void OnStateEnter(PlayerController player) { }
 
-    public override void OnStateEnter() { }
+    public void OnStateExit(PlayerController player) { }
 
-    public override void OnStateExit() { }
-
-    public override void OnStateUpdate()
+    public void OnStateUpdate(PlayerController player)
     {
-        _player.HandleMovement();
-        _player.HandleCrouchTransition();
+        player.HandleMovement();
+        player.HandleCrouchTransition();
     }
 }
 
-public class MoveCrouchState : BaseState
+public class MoveCrouchState : IBaseState<PlayerController>
 {
-    public MoveCrouchState(PlayerController player) : base(player) { }
-
-    public override void OnStateEnter()
+    public void OnStateEnter(PlayerController player)
     {
-        _player.HandleCrouch(true);
+        player.HandleCrouch(true);
     }
 
-    public override void OnStateExit()
+    public void OnStateExit(PlayerController player)
     {
-        _player.HandleCrouch(false);
+        player.HandleCrouch(false);
     }
 
-    public override void OnStateUpdate()
+    public void OnStateUpdate(PlayerController player)
     {
-        _player.HandleMovement();
-        _player.HandleCrouchTransition();
+        player.HandleMovement();
+        player.HandleCrouchTransition();
     }
 }
 
-public class ActionIdleState : BaseState
+public class ActionIdleState : IBaseState<PlayerController>
 {
-    public ActionIdleState(PlayerController player) : base(player) { }
+    public void OnStateEnter(PlayerController player) { }
 
-    public override void OnStateEnter() { }
+    public void OnStateExit(PlayerController player) { }
 
-    public override void OnStateExit() { }
-
-    public override void OnStateUpdate() { }
+    public void OnStateUpdate(PlayerController player) { }
 }
 
-public class ActionAttackState : BaseState
+public class ActionAttackState : IBaseState<PlayerController>
 {
-    public ActionAttackState(PlayerController player) : base(player) { }
+    public void OnStateEnter(PlayerController player) { }
 
-    public override void OnStateEnter() { }
+    public void OnStateExit(PlayerController player) { }
 
-    public override void OnStateExit() { }
-
-    public override void OnStateUpdate()
+    public void OnStateUpdate(PlayerController player)
     {
-        _player.HandleAttack();
+        player.HandleAttack();
     }
 }
 
-public class ActionReloadState : BaseState
+public class ActionReloadState : IBaseState<PlayerController>
 {
-    public ActionReloadState(PlayerController player) : base(player) { }
-
-    public override void OnStateEnter()
+    public void OnStateEnter(PlayerController player)
     {
-        _player.HandleReload();
+        player.HandleReload();
     }
 
-    public override void OnStateExit() { }
+    public void OnStateExit(PlayerController player) { }
 
-    public override void OnStateUpdate() { }
+    public void OnStateUpdate(PlayerController player) { }
 }
 
-public class ActionSwitchState : BaseState
+public class ActionSwitchState : IBaseState<PlayerController>
 {
-    public ActionSwitchState(PlayerController player) : base(player) { }
+    public void OnStateEnter(PlayerController player) { }
 
-    public override void OnStateEnter() { }
+    public void OnStateExit(PlayerController player) { }
 
-    public override void OnStateExit() { }
-
-    public override void OnStateUpdate() { }
+    public void OnStateUpdate(PlayerController player) { }
 }
 
-public class ActionAcquireState : BaseState
+public class ActionAcquireState : IBaseState<PlayerController>
 {
-    public ActionAcquireState(PlayerController player) : base(player) { }
-
-    public override void OnStateEnter()
+    public void OnStateEnter(PlayerController player)
     {
-        _player.HandleAcquire(true);
+        player.HandleAcquire(true);
     }
 
-    public override void OnStateExit()
+    public void OnStateExit(PlayerController player)
     {
-        _player.HandleAcquire(false);
+        player.HandleAcquire(false);
     }
 
-    public override void OnStateUpdate() { }
+    public void OnStateUpdate(PlayerController player) { }
 }

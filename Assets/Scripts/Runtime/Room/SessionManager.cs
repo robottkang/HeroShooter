@@ -5,17 +5,38 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
-public class SessionManager : SimulationBehaviour
+public class SessionManager : SimulationBehaviour, IEventListener<PlayerDiedEvent>, IEventListener<PlayerReadyEvent>
 {
+    private enum GameState { Ready, Playing, Result }
+
     [SerializeField] private GameObject playerPrefab;
     //[SerializeField] private GameObject localPlayerArmsPrefab;
     [SerializeField] private Transform[] spawnPoints;
+
+    private GameState _currentState;
+    private StateMachine<SessionManager> _gameFSM;
+    private int _readyPlayerCount;
 
 #if UNITY_EDITOR
     [Header("Debug")]
     [SerializeField] private bool isDebug;
     [SerializeField] private NetworkRunner runnerPrefab;
 #endif
+
+    private void OnEnable()
+    {
+        EventBus<PlayerDiedEvent>.Register(this);
+    }
+
+    private void OnDisable()
+    {
+        EventBus<PlayerDiedEvent>.Unregister(this);
+    }
+
+    private void Awake()
+    {
+        _gameFSM = new StateMachine<SessionManager>(this, new SessionReadyState());
+    }
 
     private void Start()
     {
@@ -61,6 +82,19 @@ public class SessionManager : SimulationBehaviour
             runner.AddGlobal(this);
     }
 
+    public void OnEvent(PlayerDiedEvent e)
+    {
+        _gameFSM.ChangeState(new SessionResultState());
+    }
+
+    public void OnEvent(PlayerReadyEvent e)
+    {
+        _readyPlayerCount++;
+        if (_readyPlayerCount >= 2)
+            _gameFSM.ChangeState(new SessionPlayingState());
+    }
+
+    #region Debug
 #if UNITY_EDITOR
     private async UniTask StartDebugSession()
     {
@@ -92,4 +126,5 @@ public class SessionManager : SimulationBehaviour
             SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
     }
 #endif
+    #endregion
 }

@@ -108,3 +108,13 @@ public struct ItemAcquireProgressEvent
     public readonly float Normalized { get; }
     public readonly bool InRange { get; }
 }
+
+public struct PlayerReadyEvent
+{
+    public PlayerReadyEvent(PlayerRef player)
+    {
+        Player = player;
+    }
+
+    public readonly PlayerRef Player { get; }
+}
