@@ -90,7 +90,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1696541739869380896, guid: 7ea24e92f91f51443b1a46e97d414a00, type: 3}
       propertyPath: NetworkedBehaviours.Array.size
-      value: 5
+      value: 7
       objectReference: {fileID: 0}
     - target: {fileID: 1696541739869380896, guid: 7ea24e92f91f51443b1a46e97d414a00, type: 3}
       propertyPath: 'NetworkedBehaviours.Array.data[2]'
@@ -104,6 +104,18 @@ PrefabInstance:
       propertyPath: 'NetworkedBehaviours.Array.data[4]'
       value: 
       objectReference: {fileID: 575083052730095209}
+    - target: {fileID: 1696541739869380896, guid: 7ea24e92f91f51443b1a46e97d414a00, type: 3}
+      propertyPath: 'NetworkedBehaviours.Array.data[5]'
+      value: 
+      objectReference: {fileID: 5984281388639305273}
+    - target: {fileID: 1696541739869380896, guid: 7ea24e92f91f51443b1a46e97d414a00, type: 3}
+      propertyPath: 'NetworkedBehaviours.Array.data[6]'
+      value: 
+      objectReference: {fileID: 1744926982434268615}
+    - target: {fileID: 1696541739869380896, guid: 7ea24e92f91f51443b1a46e97d414a00, type: 3}
+      propertyPath: 'NetworkedBehaviours.Array.data[7]'
+      value: 
+      objectReference: {fileID: 1744926982434268615}
     - target: {fileID: 3711038414803278325, guid: 7ea24e92f91f51443b1a46e97d414a00, type: 3}
       propertyPath: Flags
       value: 262146
@@ -163,6 +175,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: dea88ed20f4a8244a8de24fad1ef4082, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Rifle
+--- !u!114 &1744926982434268615 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 6647020721402620312, guid: 7ea24e92f91f51443b1a46e97d414a00, type: 3}
+  m_PrefabInstance: {fileID: 4902678335628250207}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: dea88ed20f4a8244a8de24fad1ef4082, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Rifle
 --- !u!1 &2763972501048191291 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 7084819313630963044, guid: 7ea24e92f91f51443b1a46e97d414a00, type: 3}
@@ -199,6 +222,17 @@ MonoBehaviour:
 --- !u!114 &5530511681961954711 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 633209752102207944, guid: 7ea24e92f91f51443b1a46e97d414a00, type: 3}
+  m_PrefabInstance: {fileID: 4902678335628250207}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 133e283a766200d4499e12b40c9514dc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Pistol
+--- !u!114 &5984281388639305273 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 1658942933651665510, guid: 7ea24e92f91f51443b1a46e97d414a00, type: 3}
   m_PrefabInstance: {fileID: 4902678335628250207}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 0}
