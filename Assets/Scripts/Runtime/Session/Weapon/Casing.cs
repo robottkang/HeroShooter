@@ -4,17 +4,17 @@ using Cysharp.Threading.Tasks;
 public class Casing : MonoBehaviour
 {
 	[Header("Force X")]
-	public float minimumXForce;
-	public float maximumXForce;
+	public float minXForce;
+	public float maxXForce;
 	[Header("Force Y")]
-	public float minimumYForce;
-	public float maximumYForce;
+	public float minYForce;
+	public float maxYForce;
 	[Header("Force Z")]
-	public float minimumZForce;
-	public float maximumZForce;
+	public float minZForce;
+	public float maxZForce;
 	[Header("Rotation Force")]
-	public float minimumRotation;
-	public float maximumRotation;
+	public float minRotation;
+	public float maxRotation;
 	[Header("Despawn Time")]
 	public float despawnTime;
 
@@ -23,20 +23,20 @@ public class Casing : MonoBehaviour
 	public AudioSource audioSource;
 
 	[Header("Spin Settings")]
-	public float speed = 2500.0f;
+	public float speed = 2500f;
 
 	private void OnEnable()
 	{
 		GetComponent<Rigidbody>().AddRelativeTorque(
-			Random.Range(minimumRotation, maximumRotation),
-			Random.Range(minimumRotation, maximumRotation),
-			Random.Range(minimumRotation, maximumRotation)
+			Random.Range(minRotation, maxRotation),
+			Random.Range(minRotation, maxRotation),
+			Random.Range(minRotation, maxRotation)
 			* Time.deltaTime);
 
 		GetComponent<Rigidbody>().AddRelativeForce(
-			Random.Range (minimumXForce, maximumXForce),
-			Random.Range (minimumYForce, maximumYForce),
-			Random.Range (minimumZForce, maximumZForce));
+			Random.Range (minXForce, maxXForce),
+			Random.Range (minYForce, maxYForce),
+			Random.Range (minZForce, maxZForce));
 	}
 
 	private void Start()

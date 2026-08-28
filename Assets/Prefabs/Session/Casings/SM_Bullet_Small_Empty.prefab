@@ -91,6 +91,7 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+  m_MaskInteraction: 0
   m_AdditionalVertexStreams: {fileID: 0}
 --- !u!54 &4690906968888558922
 Rigidbody:
@@ -131,14 +132,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f92bf5c68a45eb041a16e0674f4f2075, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Casing
-  minimumXForce: 25
-  maximumXForce: 40
-  minimumYForce: 10
-  maximumYForce: 20
-  minimumZForce: -12
-  maximumZForce: 12
-  minimumRotation: -360
-  maximumRotation: 360
+  minXForce: 25
+  maxXForce: 40
+  minYForce: 10
+  maxYForce: 20
+  minZForce: -12
+  maxZForce: 12
+  minRotation: -360
+  maxRotation: 360
   despawnTime: 1
   casingSounds:
   - {fileID: 8300000, guid: 82fd1b9495a6b2045bbeabe4b7c168da, type: 3}
