@@ -3,23 +3,27 @@ using Fusion;
 using System;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.InputSystem;
 using UnityEngine.SceneManagement;
 
 public class SessionManager : SimulationBehaviour, IEventListener<PlayerDiedEvent>, IEventListener<PlayerReadyEvent>
 {
-    private enum GameState { Ready, Playing, Result }
-
     [SerializeField] private GameObject playerPrefab;
     //[SerializeField] private GameObject localPlayerArmsPrefab;
     [SerializeField] private Transform[] spawnPoints;
 
-    private GameState _currentState;
     private StateMachine<SessionManager> _gameFSM;
+    private readonly SessionReadyState _sessionReady = new();
+    private readonly SessionPlayState _sessionPlaying = new();
+    private readonly SessionResetState _sessionReset = new();
+    private readonly SessionResultState _sessionResult = new();
+    private bool _isLeavingSession = false;
     private int _readyPlayerCount;
 
 #if UNITY_EDITOR
     [Header("Debug")]
     [SerializeField] private bool isDebug;
+    [SerializeField] private GameMode debugGameMode = GameMode.Single;
     [SerializeField] private NetworkRunner runnerPrefab;
 #endif
 
@@ -35,24 +39,45 @@ public class SessionManager : SimulationBehaviour, IEventListener<PlayerDiedEven
 
     private void Awake()
     {
-        _gameFSM = new StateMachine<SessionManager>(this, new SessionReadyState());
+        _gameFSM = new StateMachine<SessionManager>(this, _sessionReady);
     }
 
     private void Start()
     {
+        Init().Forget();
+    }
+
+    private void Update()
+    {
+        if (Keyboard.current.escapeKey.wasPressedThisFrame && !_isLeavingSession)
+        {
+            Cursor.lockState = CursorLockMode.None;
+            Cursor.visible = true;
+
+            LeaveSessionAndReturnToLobby().Forget();
+        }
+    }
+
+    private async UniTaskVoid Init()
+    {
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
-        Camera.main.gameObject.SetActive(false);
 
-#if UNITY_EDITOR
-        if (isDebug && FindAnyObjectByType<NetworkRunner>() == null)
+        if (Runner != null)
         {
-            StartDebugSession().Forget();
-            return;
+            RegisterOnRunner();
+            SpawnPlayer();
+        }
+#if UNITY_EDITOR
+        else if (isDebug)
+        {
+            await StartDebugSession();
         }
 #endif
-        RegisterOnRunner();
-        SpawnPlayer();
+        else
+        {
+            LeaveSessionAndReturnToLobby().Forget();
+        }
     }
 
     private void SpawnPlayer()
@@ -74,6 +99,21 @@ public class SessionManager : SimulationBehaviour, IEventListener<PlayerDiedEven
         Runner.SpawnAsync(playerPrefab, spawnPoint.position, spawnPoint.rotation, Runner.LocalPlayer);
     }
 
+    public async UniTaskVoid LeaveSessionAndReturnToLobby()
+    {
+        _isLeavingSession = true;
+
+        if (Runner != null)
+        {
+            await Runner.Shutdown();
+
+            Destroy(Runner.gameObject);
+        }
+
+        SceneManager.LoadScene("Lobby");
+    }
+
+
     public void RegisterOnRunner()
     {
         var runner = NetworkRunner.GetRunnerForGameObject(gameObject);
@@ -91,7 +131,7 @@ public class SessionManager : SimulationBehaviour, IEventListener<PlayerDiedEven
     {
         _readyPlayerCount++;
         if (_readyPlayerCount >= 2)
-            _gameFSM.ChangeState(new SessionPlayingState());
+            _gameFSM.ChangeState(new SessionPlayState());
     }
 
     #region Debug
@@ -108,7 +148,7 @@ public class SessionManager : SimulationBehaviour, IEventListener<PlayerDiedEven
 
         var result = await runner.StartGame(new StartGameArgs
         {
-            GameMode = GameMode.Shared,
+            GameMode = debugGameMode,
             SessionName = "debug-session",
             SessionProperties = props,
             Scene = SceneRef.FromIndex(SceneManager.GetActiveScene().buildIndex),
@@ -120,10 +160,13 @@ public class SessionManager : SimulationBehaviour, IEventListener<PlayerDiedEven
             return;
         }
 
+        RegisterOnRunner();
+        SpawnPlayer();
+        /*
         if (runner.IsSharedModeMasterClient)
             await runner.LoadScene(SceneRef.FromIndex(SceneManager.GetActiveScene().buildIndex)).ToUniTask();
         else
-            SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+            SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);*/
     }
 #endif
     #endregion

@@ -5,9 +5,6 @@ using UnityEngine.InputSystem;
 
 public class PlayerController : NetworkBehaviour, IItemInteractor
 {
-    private enum MoveState { Idle, Walk, Sprint, Crouch }
-    private enum ActionState { Idle, Attack, Reload, Switch, Acquire }
-
     [Header("Input")]
     [SerializeField] private InputActionAsset actionAsset;
 
@@ -56,8 +53,16 @@ public class PlayerController : NetworkBehaviour, IItemInteractor
 
     private StateMachine<PlayerController> _moveFSM;
     private StateMachine<PlayerController> _actionFSM;
-    private MoveState _currentMoveState;
-    private ActionState _currentActionState;
+
+    private readonly MoveIdleState _moveIdle = new();
+    private readonly MoveWalkState _moveWalk = new();
+    private readonly MoveSprintState _moveSprint = new();
+    private readonly MoveCrouchState _moveCrouch = new();
+    private readonly ActionIdleState _actionIdle = new();
+    private readonly ActionAttackState _actionAttack = new();
+    private readonly ActionReloadState _actionReload = new();
+    private readonly ActionSwitchState _actionSwitch = new();
+    private readonly ActionAcquireState _actionAcquire = new();
 
     private InputAction _moveAction, _lookAction, _jumpAction, _sprintAction, _crouchAction, _reloadAction, _aimAction, _attackAction, _acquireAction, _abilityAction;
 
@@ -71,7 +76,6 @@ public class PlayerController : NetworkBehaviour, IItemInteractor
     private bool _isAcquiring;
     private bool _isNearItem;
 
-    private bool IsActionBlocked => _isSprinting;
     private WeaponBase EquippedWeapon => inventory.CurrentWeapon;
 
     public event Action<bool> OnAimingChanged;
@@ -80,7 +84,12 @@ public class PlayerController : NetworkBehaviour, IItemInteractor
     public Health Health => health;
     public WeaponInventory Inventory => inventory;
     public Highlighter Highlighter => highlighter;
+    public bool IsActionBlocked => _isSprinting;
     public bool IsAcquiring => _isAcquiring;
+    public bool IsWeaponBusy => inventory.IsSwitching
+        || EquippedWeapon.IsReloading
+        || (_isNearItem && _acquireAction.IsPressed())
+        || (_ability.IsActive && _ability.BlockFlags.HasFlag(AbilityBlockFlags.Action));
     public float WalkSpeed => walkSpeed;
     public float RunSpeed => runSpeed;
     public float VerticalVelocity { get => _verticalVelocity; set => _verticalVelocity = value; }
@@ -96,8 +105,8 @@ public class PlayerController : NetworkBehaviour, IItemInteractor
 
         if (Object.HasInputAuthority)
         {
-            _moveFSM = new StateMachine<PlayerController>(this, new MoveIdleState());
-            _actionFSM = new StateMachine<PlayerController>(this, new ActionIdleState());
+            _moveFSM = new StateMachine<PlayerController>(this, _moveIdle);
+            _actionFSM = new StateMachine<PlayerController>(this, _actionIdle);
 
             var playerMap = actionAsset.FindActionMap("Player", true);
             _moveAction = playerMap.FindAction("Move", true);
@@ -185,33 +194,33 @@ public class PlayerController : NetworkBehaviour, IItemInteractor
         // while ability that block movement is active
         if (_ability.IsActive && _ability.BlockFlags.HasFlag(AbilityBlockFlags.Move))
         {
-            ChangeMoveState(MoveState.Idle);
+            _moveFSM.ChangeState(_moveIdle);
             return;
         }
 
         // while crouch key(LCtrl) is pressed or player cannot stand up due to obstacle
         if (_crouchAction.IsPressed() || !CanStandUp())
         {
-            ChangeMoveState(MoveState.Crouch);
+            _moveFSM.ChangeState(_moveCrouch);
             return;
         }
 
         // when wasd is not pressed
         if (_moveInput.sqrMagnitude < 0.01f)
         {
-            ChangeMoveState(MoveState.Idle);
+            _moveFSM.ChangeState(_moveWalk);
             return;
         }
 
         // while sprint key(LShift) is pressed
         if (_sprintAction.IsPressed())
         {
-            ChangeMoveState(MoveState.Sprint);
+            _moveFSM.ChangeState(_moveSprint);
             return;
         }
 
         // when just wasd is pressed
-        ChangeMoveState(MoveState.Walk);
+        _moveFSM.ChangeState(_moveWalk);
     }
 
     private void HandleActionFSM()
@@ -219,28 +228,28 @@ public class PlayerController : NetworkBehaviour, IItemInteractor
         // while ability that block action is active
         if (IsActionBlocked || (_ability.IsActive && _ability.BlockFlags.HasFlag(AbilityBlockFlags.Action)))
         {
-            ChangeActionState(ActionState.Idle);
+            _actionFSM.ChangeState(_actionIdle);
             return;
         }
 
         // while weapon is switching
         if (inventory.IsSwitching)
         {
-            ChangeActionState(ActionState.Switch);
+            _actionFSM.ChangeState(_actionSwitch);
             return;
         }
 
         // while weapon is reloading or reload key(R) is pressed
         if (EquippedWeapon.IsReloading || _reloadAction.WasPressedThisFrame())
         {
-            ChangeActionState(ActionState.Reload);
+            _actionFSM.ChangeState(_actionReload);
             return;
         }
 
         // while player acquire key(E) is pressed in range of item
         if (_isNearItem && _acquireAction.IsPressed())
         {
-            ChangeActionState(ActionState.Acquire);
+            _actionFSM.ChangeState(_actionAcquire);
             return;
         }
 
@@ -249,62 +258,11 @@ public class PlayerController : NetworkBehaviour, IItemInteractor
             _attackAction.IsPressed() : _attackAction.WasPressedThisFrame();
         if (shouldFire)
         {
-            ChangeActionState(ActionState.Attack);
+            _actionFSM.ChangeState(_actionAttack);
             return;
         }
 
-        ChangeActionState(ActionState.Idle);
-    }
-
-    private void ChangeMoveState(MoveState newState)
-    {
-        if (_currentMoveState == newState) return;
-        _currentMoveState = newState;
-
-        switch (newState)
-        {
-            case MoveState.Idle:
-                _moveFSM.ChangeState(new MoveIdleState());
-                break;
-            case MoveState.Walk:
-                _moveFSM.ChangeState(new MoveWalkState());
-                break;
-            case MoveState.Sprint:
-                _moveFSM.ChangeState(new MoveSprintState());
-                break;
-            case MoveState.Crouch:
-                _moveFSM.ChangeState(new MoveCrouchState());
-                break;
-            default:
-                throw new NotImplementedException();
-        }
-    }
-
-    private void ChangeActionState(ActionState newState)
-    {
-        if (_currentActionState == newState) return;
-        _currentActionState = newState;
-
-        switch (newState)
-        {
-            case ActionState.Idle:
-                _actionFSM.ChangeState(new ActionIdleState());
-                break;
-            case ActionState.Attack:
-                _actionFSM.ChangeState(new ActionAttackState());
-                break;
-            case ActionState.Reload:
-                _actionFSM.ChangeState(new ActionReloadState());
-                break;
-            case ActionState.Switch:
-                _actionFSM.ChangeState(new ActionSwitchState());
-                break;
-            case ActionState.Acquire:
-                _actionFSM.ChangeState(new ActionAcquireState());
-                break;
-            default:
-                throw new NotImplementedException();
-        }
+        _actionFSM.ChangeState(_actionIdle);
     }
 
     private void HandleJumpBuffer()
@@ -369,8 +327,7 @@ public class PlayerController : NetworkBehaviour, IItemInteractor
 
     private void HandleAiming()
     {
-        bool canAim = (_currentMoveState is not MoveState.Sprint)
-            && (_currentActionState is ActionState.Idle or ActionState.Attack);
+        bool canAim = !_isSprinting && !IsWeaponBusy;
 
         bool shouldAim = canAim && _aimAction.IsPressed();
         if (shouldAim != _isAiming)

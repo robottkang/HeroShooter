@@ -15,7 +15,6 @@ public class StateMachine<T>
     {
         if (_currentState == newState)
         {
-            Debug.LogWarning($"Same state : {newState}");
             return;
         }
 
